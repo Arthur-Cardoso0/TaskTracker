@@ -1,0 +1,51 @@
+## Pastas geradas pelo build do .NET
+bin/
+obj/
+out/
+
+## Arquivos de configuração de usuário do Visual Studio
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Pasta do Visual Studio
+.vs/
+
+## Configurações do VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+## Arquivos de log
+*.log
+
+## Arquivos de resultado de testes
+[Tt]est[Rr]esult*/
+*.trx
+
+## NuGet
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+
+## Arquivos de publicação
+*.pubxml
+*.publishproj
+PublishScripts/
+
+## Segredos e configurações locais sensíveis
+appsettings.Local.json
+secrets.json
+*.pfx
+
+## Banco de dados local
+*.db
+*.sqlite
+
+## Arquivos de sistema operacional
+.DS_Store
+Thumbs.db
