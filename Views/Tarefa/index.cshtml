@@ -1,0 +1,72 @@
+@model IEnumerable<TaskTracker.Models.Tarefa>
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    ViewData["Title"] = "Gerenciamento de Tarefas";
+}
+
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+</style>
+<div>
+    <!-- Cabeçalho da Página -->
+    <div>
+        <h2>Minhas Tarefas</h2>
+        <a asp-action="Criar" class="btn btn-primary">
+            <i></i> Nova Tarefa
+        </a>
+    </div>
+
+    <!-- Tabela de Tarefas -->
+    <div>
+        <div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Título</th>
+                        <th>Descrição</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var tarefa in Model)
+                        {
+                            <tr>
+                                <td><strong>@tarefa.Titulo</strong></td>
+                                <td>@tarefa.Descricao</td>
+                                <td>
+                                    @if (tarefa.Status.ToString() == "Concluída")
+                                    {
+                                        <span>Concluída</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Pendente</span>
+                                    }
+                                </td>
+                                <td>
+                                    <a asp-action="Editar" asp-route-id="@tarefa.Id">Editar</a>
+                                    <a asp-action="Detalhes" asp-route-id="@tarefa.Id">Detalhes</a>
+                                    <a asp-action="Excluir" asp-route-id="@tarefa.Id">Excluir</a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4"">
+                                Nenhuma tarefa cadastrada no momento. Clique em "Nova Tarefa" para começar!
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

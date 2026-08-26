@@ -1,0 +1,35 @@
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    ViewData["Title"] = "Pagina Inicial";
+}
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+    .Inicio{
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+</style>
+<div class="Inicio">
+    <h1>Bem-vindo ao TaskTracker</h1>
+
+    @if (User.Identity != null && User.Identity.IsAuthenticated)
+    {
+        <div>
+            <p>Olá,<strong>@User.Identity.Name!</strong></p>
+            <p>Você está logado e pode acessar suas tarefas.</p>
+        </div>
+        <form asp-controller="Conta" asp-action="Sair" method="post">
+            <button type="submit" class="btn btn-outline-danger">Deslogar</button>
+        </form>       
+    }
+    else{
+        
+        <div>
+            <p>Você não está logado. Por favor, faça login para realizar suas tarefas.</p>
+        </div>
+        <a asp-controller="Conta" asp-action="Login">Login</a>
+    }
+</div>
