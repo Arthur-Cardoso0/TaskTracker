@@ -3,31 +3,55 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using TaskTracker.Data;
+using TaskTracker.Models;
 
 namespace TaskTracker.Controllers
-{
-    [Route("[controller]")]
-    public class ContaController : Controller
+
+{   public class ContaController : Controller
    {
+    private readonly AppDbContext _context;
+    private readonly PasswordHasher<Usuario> _passwordHasher = new();
+
+    public ContaController(AppDbContext context)
+    {
+        _context = context;
+    }
+
     [HttpGet]
-    public IActionResult index() => View();
+    public IActionResult Index() => View();
+
+    [HttpGet]
+    public IActionResult Login() => View("Index");
 
     [HttpPost]
-    public async Task<IActionResult> Login(string username, string password)
+    public async Task<IActionResult> Login(string Username, string Password)
     {
-        if (username == "admin" && password == "123456")
+        var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == Username);
+        if (usuario == null)
         {
-            var claims = new List<Claim> { new Claim(ClaimTypes.Name, username) };
-            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            ModelState.AddModelError(string.Empty, "Usuário ou senha inválidos.");
+            return View("Index");
+        }
+        //compara a senha digitada salva a do banco de dados   
+        var resultado = _passwordHasher.VerifyHashedPassword(usuario, usuario.SenhaHash, Password);
 
-            // Cria e salva o Cookie de autenticação no navegador
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
-
-            return RedirectToAction("Index", "Home");
+        if (resultado == PasswordVerificationResult.Failed)
+        {
+            ModelState.AddModelError(string.Empty, "Usuário ou senha inválidos.");
+            return View("Index");
         }
 
-        ModelState.AddModelError(string.Empty, "Usuário ou senha inválidos.");
-        return View();
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, usuario.Nome),
+            new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
+        };
+        //cria e salva o cookie no navegador
+        var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+        return RedirectToAction("Index", "Home");
     }
 
     [HttpPost]
