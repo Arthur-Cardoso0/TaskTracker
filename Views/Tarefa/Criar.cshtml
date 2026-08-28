@@ -4,28 +4,7 @@
 }
 <h2>Criar Nova Tarefa</h2>
 <form asp-action="Criar" method="post">
-    <div class="mb-3">
-        <label asp-for="Titulo" class="form-label"></label>
-        <input asp-for="Titulo" class="form-control">
-        <span asp-validation-for="Titulo" class="text-danger"></span>
-    </div>
-    <div class="mb-3">
-        <label asp-for="Descricao" class="form-label"></label>
-        <input asp-for="Descricao" class="form-control">
-        <span asp-validation-for="Descricao" class="text-danger"></span>
-    </div>
-    <div class="mb-3">
-        <label asp-for="Status" class="form-label"></label>
-        <select asp-for="Status" class="form-control" asp-items="Html.GetEnumSelectList<TaskTracker.Models.StatusTarefa>()">
-            <option value="">Selecione o status</option>
-        </select>
-        <span asp-validation-for="Status" class="text-danger"></span>
-    </div>
-    <div class="mb-3">
-        <label asp-for="Prazo" class="form-label"></label>
-        <input asp-for="Prazo" class="form-control">
-        <span asp-validation-for="Prazo" class="text-danger"></span>
-    </div>
+    @await Html.PartialAsync("_TarefaForm", Model)
     <button type="submit" class="btn btn-primary">Salvar</button>
-    <a asp-action="Index" class="btn btn-secundary">Voltar</a>
+    <a asp-action="Index" class="btn btn-secondary">Voltar</a>
 </form>
