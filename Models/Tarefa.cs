@@ -1,6 +1,9 @@
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+
 namespace TaskTracker.Models
 {
-public enum StatusTarefa{Pendente, EmAndamento, Concluida}
+public enum StatusTarefa{Pendente, [Display(Name = "Em Andamento")]EmAndamento, Concluida}
 
     public class Tarefa
     {

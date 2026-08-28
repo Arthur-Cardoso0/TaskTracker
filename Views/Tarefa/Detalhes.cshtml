@@ -1,0 +1,27 @@
+@model TaskTracker.Models.Tarefa
+@{
+    ViewData["Titulo"] = "Detalhes da Tarefa";
+}
+<h2>Detalhes da Tarefa</h2>
+<div>
+    <dl class="row">
+        <dt class="col-sm-3">Titulo</dt>
+        <dd class="col-sm-9">@Model.Titulo</dd>
+
+        <dt class="col-sm-3">Descrição</dt>
+        <dd class="col-sm-9">@Model.Descricao</dd>
+
+        <dt class="col-sm-3">Status</dt>
+        <dd class="col-sm-9">@Model.Status</dd>
+
+        <dt class="col-sm-3">Prazo</dt>
+        <dd class="col-sm-9">@Model.Prazo.ToString("dd/MM/yyyy")</dd>
+
+        <dt class="col-sm-3">Criado Em</dt>
+        <dd class="col-sm-9">@Model.CriadaEm.ToString("dd/MM/yyyy  HH:mm")</dd>
+    </dl>
+</div>
+<div class="mt-3">
+    <a asp-action="Editar" asp-route-id="@Model.Id" class="btn btn-primary">Editar</a>
+    <a asp-action="Index" class="btn btn-secundary">Voltar</a>
+</div>
