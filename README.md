@@ -15,7 +15,7 @@ Um sistema web prático para gerenciamento de tarefas e contas de usuários, des
 * **Framework:** ASP.NET Core MVC
 * **ORM:** Entity Framework Core
 * **Front-end:** HTML, CSS e Razor Views (`.cshtml`)
-* **Banco de Dados:** Gerenciado via `AppDbContext` (Configuração definida no `appsettings.json`)
+* **Banco de Dados:** Gerenciado via csproj (Configuração definida no `UserSecret`)
 
 ## 📁 Estrutura do Projeto
 
