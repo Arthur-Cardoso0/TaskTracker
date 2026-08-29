@@ -1,3 +1,4 @@
+@using System.Security.Claims
 <!DOCTYPE html>
 <html lang="pt-br">
     <head>
@@ -20,11 +21,19 @@
                             <li class="nav-item">
                                 <a class="navbar-brand" asp-controller="Home" asp-action="Index">Início</a>
                             </li>
-                            @if(User.Identity != null && User.Identity.IsAuthenticated)
+                            @if(User.Identity.IsAuthenticated)
                             {
+                                @if(User.HasClaim(ClaimTypes.Role, "Admin"))
+                                {
+                                    <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Admin" asp-action="Index">Gerenciar Tarefas</a>
+                                </li>
+                                }
+                                else{
                                 <li class="nav-item">
                                     <a class="nav-link" asp-controller="Tarefa" asp-action="Index">Minhas Tarefas</a>
                                 </li>
+                                }
                             }
                         </ul>
                     </div>

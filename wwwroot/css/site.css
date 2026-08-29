@@ -1,17 +1,230 @@
+:root {
+    --brand-primary: #4f46e5;
+    --brand-primary-dark: #4338ca;
+    --brand-secondary: #06b6d4;
+    --brand-bg: #f4f5fb;
+    --brand-surface: #ffffff;
+    --brand-text: #1f2333;
+    --brand-text-muted: #6b7280;
+    --brand-border: #e5e7eb;
+    --radius: 12px;
+
+    --admin-navbar-bg: #1e2433;
+    --admin-accent: #f59e0b;
+}
 html{
     overflow-x: hidden;
 }
 
 body {
+    background-color: var(--brand-bg);
+    color: var(--brand-text);
+    font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
     overflow-x: hidden;
-    background-color: #f8f9fa;
 }
 
-.navbar-brand {
+main {
+    flex: 1;
+}
+
+h1, h2, h3, h4, h5 {
+    font-weight: 600;
+    color: var(--brand-text);
+}
+
+a {
+    color: var(--brand-primary);
+}
+
+a:hover {
+    color: var(--brand-primary-dark);
+}
+
+/* NAVBAR */
+.navbar {
+    background-color: var(--brand-surface) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    padding-top: 0.9rem;
+    padding-bottom: 0.9rem;
+}
+
+.navbar .navbar-brand {
     font-weight: 700;
+    font-size: 1.35rem;
+    color: var(--brand-primary) !important;
+    letter-spacing: -0.02em;
 }
 
+.navbar .nav-link {
+    color: var(--brand-text) !important;
+    font-weight: 500;
+    padding: 0.5rem 1rem !important;
+    border-radius: 8px;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.navbar .nav-link:hover {
+    background-color: rgba(79, 70, 229, 0.08);
+    color: var(--brand-primary) !important;
+}
+
+.navbar-toggler {
+    border: none !important;
+}
+
+/* ============================================
+   ÁREA ADMINISTRATIVA
+   (precisa vir DEPOIS do .navbar genérico acima,
+   para vencer o empate de especificidade CSS)
+============================================ */
+.admin-navbar {
+    background-color: var(--admin-navbar-bg) !important;
+    padding-top: 0.9rem;
+    padding-bottom: 0.9rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.admin-navbar .navbar-brand {
+    color: #ffffff !important;
+    font-weight: 700;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.admin-badge {
+    background-color: var(--admin-accent);
+    color: #1e2433;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    padding: 0.15em 0.55em;
+    border-radius: 5px;
+}
+
+.admin-navbar .admin-user {
+    color: #cbd5e1;
+    font-size: 0.9rem;
+}
+
+.admin-card-header {
+    border-left: 4px solid var(--admin-accent);
+    padding-left: 0.9rem;
+}
+
+/* CARDS */
+.card {
+    border: 1px solid var(--brand-border);
+    border-radius: var(--radius);
+    box-shadow: 0 2px 10px rgba(31, 35, 51, 0.05);
+}
+
+.card-body {
+    padding: 2rem;
+}
+
+/* FORMULÁRIOS */
+.form-label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--brand-text);
+    margin-bottom: 0.4rem;
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid var(--brand-border);
+    padding: 0.6rem 0.9rem;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 0.2rem rgba(79, 70, 229, 0.15);
+}
+
+/* BOTÕES */
+.btn {
+    border-radius: 8px;
+    font-weight: 600;
+    padding: 0.55rem 1.3rem;
+    transition: transform 0.1s ease, box-shadow 0.15s ease;
+}
+
+.btn:active {
+    transform: scale(0.98);
+}
+
+.btn-primary {
+    background-color: var(--brand-primary);
+    border-color: var(--brand-primary);
+}
+
+.btn-primary:hover {
+    background-color: var(--brand-primary-dark);
+    border-color: var(--brand-primary-dark);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+}
+
+.btn-outline-secondary {
+    border-color: var(--brand-border);
+    color: var(--brand-text-muted);
+}
+
+.btn-outline-secondary:hover {
+    background-color: var(--brand-text);
+    border-color: var(--brand-text);
+}
+
+/* TABELA DE TAREFAS */
+.table thead.table-light th {
+    background-color: #f8f9fc;
+    color: var(--brand-text-muted);
+    font-weight: 600;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-bottom: 1px solid var(--brand-border);
+}
+
+.table td, .table th {
+    padding: 0.9rem 1rem;
+    vertical-align: middle;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(79, 70, 229, 0.04);
+}
+
+.badge {
+    font-weight: 600;
+    padding: 0.45em 0.8em;
+    border-radius: 6px;
+}
+
+/* PÁGINA INICIAL */
+.hero {
+    padding: 4rem 1rem;
+}
+
+.hero h1 {
+    font-weight: 700;
+    letter-spacing: -0.03em;
+}
+
+/* RODAPÉ */
 .footer {
-    padding: 1rem 0;
-    color: #6c757d;
+    padding: 1.5rem 0;
+    color: var(--brand-text-muted);
+    font-size: 0.9rem;
+}
+
+/* RESPONSIVO */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1.5rem;
+    }
 }

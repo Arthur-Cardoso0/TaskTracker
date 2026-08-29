@@ -6,7 +6,7 @@
     </div>
     <div class="mb-3">
         <label asp-for="Descricao" class="form-label"></label>
-        <input asp-for="Descricao" class="form-control">
+         <textarea asp-for="Descricao" class="form-control" rows="3" required></textarea>
         <span asp-validation-for="Descricao" class="text-danger"></span>
     </div>
     <div class="mb-3">
@@ -14,8 +14,8 @@
         <select asp-for="Status" class="form-control" asp-items="Html.GetEnumSelectList<TaskTracker.Models.StatusTarefa>()"></select>
         <span asp-validation-for="Status" class="text-danger"></span>
     </div>
-    <div class="mb-3">
-        <label asp-for="Prazo" class="form-label"></label>
-        <input asp-for="Prazo" class="form-control">
+    <div class="form-floating mb-3">
+        <input asp-for="Prazo" type="datetime-local" class="form-control" id="campoPrazo" asp-format="{0:yyyy-MM-ddTHH:mm}" placeholder="Defina o prazo" />
+        <label asp-for="Prazo" for="campoPrazo">Prazo para conclusão</label>
         <span asp-validation-for="Prazo" class="text-danger"></span>
     </div>
