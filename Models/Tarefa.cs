@@ -9,6 +9,7 @@ public enum StatusTarefa{Pendente, [Display(Name = "Em Andamento")]EmAndamento, 
     {
         public int Id {get; set;}
         public string Titulo {get; set;}
+        [Display(Name = "Descrição")]
         public string Descricao {get; set;}
         public StatusTarefa Status {get; set;} = StatusTarefa.Pendente;
         public DateTime Prazo {get; set;}
