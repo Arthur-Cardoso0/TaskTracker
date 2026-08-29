@@ -8,5 +8,6 @@ namespace TaskTracker.Data
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options){}
         public DbSet<Tarefa> Tarefas {get; set;}
         public DbSet<Usuario> Usuarios {get; set;}
+        public DbSet<Admin> Admin {get; set;}
     }
 }

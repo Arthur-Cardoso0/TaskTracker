@@ -1,0 +1,53 @@
+@model IEnumerable<TaskTracker.Models.Usuario>
+@{
+    ViewData["Title"] = "Painel Administrativo";
+    Layout = "_AdminLayout";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 admin-card-header">
+    <h2 class="mb-0">Gerenciamento de Usuários</h2>
+</div>
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Usuário</th>
+                    <th>E-mail</th>
+                    <th>Qtd Tarefas</th>
+                    <th class="text-end">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">Nenhum usuário cadastrado ainda.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var usuario in Model)
+                    {
+                        <tr>
+                            <td>@usuario.Id</td>
+                            <td>@usuario.Nome</td>
+                            <td>@usuario.Email</td>
+                            <td><span class="badge bg-primary">@(usuario.Tarefas?.Count ?? 0)</span></td>
+                            <td class="text-end">
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <a asp-action="TarefasUsuario" asp-route-id="@usuario.Id" class="btn btn-sm btn-outline-secondary">Ver Tarefas</a>
+                                    <a asp-action="EditarUsuario" asp-route-id="@usuario.Id" class="btn btn-sm btn-outline-secondary">Editar</a>
+                                    <form asp-action="ExcluirUsuario" asp-route-id="@usuario.Id" method="post" onsubmit="return confirm('Excluir este usuário apagará todas as suas tarefas. Continuar?');" class="m-0">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Excluir</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

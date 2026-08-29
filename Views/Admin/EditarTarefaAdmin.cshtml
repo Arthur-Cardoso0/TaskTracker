@@ -1,0 +1,38 @@
+@model TaskTracker.Models.Tarefa
+@{
+    ViewData["Title"] = "Editar Tarefa (Admin)";
+    Layout = "_AdminLayout";
+}
+
+<div class="row justify-content-center mt-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h3 class="card-title mb-4">Editar Tarefa</h3>
+                <form asp-action="EditarTarefaAdmin" asp-route-id="@Model.Id" method="post">
+                    <input type="hidden" asp-for="UsuarioId" />
+                    <div class="mb-3">
+                        <label asp-for="Titulo" class="form-label">Título</label>
+                        <input asp-for="Titulo" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Descricao" class="form-label">Descrição</label>
+                        <textarea asp-for="Descricao" class="form-control" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Status" class="form-label">Status</label>
+                        <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<TaskTracker.Models.StatusTarefa>()"></select>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input asp-for="Prazo" type="datetime-local" class="form-control" id="campoPrazo" asp-format="{0:yyyy-MM-ddTHH:mm}" placeholder="Defina o prazo" />
+                        <label asp-for="Prazo" for="campoPrazo">Prazo para conclusão</label>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary w-100">Salvar Alterações</button>
+                        <a asp-action="TarefasUsuario" asp-route-id="@Model.UsuarioId" class="btn btn-outline-secondary w-100">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

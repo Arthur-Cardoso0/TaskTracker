@@ -1,0 +1,92 @@
+@model TaskTracker.Models.Usuario
+@{
+    ViewData["Title"] = "Tarefas de " + Model.Nome;
+    Layout = "_AdminLayout";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 admin-card-header">
+    <h2 class="mb-0">Tarefas de: <span class="text-primary">@Model.Nome</span></h2>
+    <a asp-action="Index" class="btn btn-outline-secondary">Voltar aos Usuários</a>
+</div>
+
+<div class="card mb-4 shadow-sm">
+    <div class="card-body">
+        <h5 class="card-title mb-3">Adicionar Tarefa para @Model.Nome</h5>
+        <form asp-action="CriarTarefaAdmin" method="post" class="row g-3 align-items-center">
+            <input type="hidden" name="usuarioId" value="@Model.Id" />
+            
+            <div class="col-md-3">
+                <input type="text" name="Titulo" class="form-control" placeholder="Título da Tarefa" required />
+            </div>
+            <div class="col-md-3">
+                <input type="text" name="Descricao" class="form-control" placeholder="Descrição da Tarefa" required />
+            </div>
+            <div class="col-md-2">
+                <input type="date" name="Prazo" class="form-control" required />
+            </div>
+            <div class="col-md-2">
+                <select name="Status" class="form-select" asp-items="Html.GetEnumSelectList<TaskTracker.Models.StatusTarefa>()"></select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Adicionar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Título</th>
+                    <th>Descrição</th>
+                    <th>Status</th>
+                    <th>Prazo</th>
+                    <th class="text-end">Ações do Admin</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if(Model.Tarefas == null || !Model.Tarefas.Any())
+                {
+                    <tr><td colspan="5" class="text-center text-muted py-4">Este usuário não possui tarefas.</td></tr>
+                }
+                else
+                {
+                    @foreach (var tarefa in Model.Tarefas)
+                    {
+                        <tr>
+                            <td>@tarefa.Titulo</td>
+                            <td class="text-muted">@tarefa.Descricao</td>
+                            <td>
+                                @if (tarefa.Status.ToString() == "Concluida")
+                                {
+                                    <span class="badge bg-success">Concluída</span>
+                                }
+                                else if (tarefa.Status.ToString() == "EmAndamento")
+                                {
+                                    <span class="badge bg-warning text-dark">Em andamento</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Pendente</span>
+                                }
+                            </td>
+                            <td>@tarefa.Prazo.ToString("dd/MM/yyyy")</td>
+                            <td class="text-end">
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <a asp-action="EditarTarefaAdmin" asp-route-id="@tarefa.Id" class="btn btn-sm btn-outline-secondary">Editar</a>
+                                    <form asp-action="ExcluirTarefaAdmin" method="post" onsubmit="return confirm('Excluir esta tarefa do usuário?');" class="m-0">
+                                        <input type="hidden" name="id" value="@tarefa.Id" />
+                                        <input type="hidden" name="usuarioId" value="@Model.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Excluir</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
