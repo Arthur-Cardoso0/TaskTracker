@@ -66,7 +66,7 @@ namespace TaskTracker.Controllers
         var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Nome == Username);
         if (usuario == null)
         {
-            ModelState.AddModelError(string.Empty, "Usuário ou senha inválidos.");
+            ModelState.AddModelError(string.Empty, "Usuário inválido");
             return View("Index");
         }
         //compara a senha digitada salva a do banco de dados   
@@ -74,7 +74,7 @@ namespace TaskTracker.Controllers
 
         if (resultado == PasswordVerificationResult.Failed)
         {
-            ModelState.AddModelError(string.Empty, "Usuário ou senha inválidos.");
+            ModelState.AddModelError(string.Empty, "senha inválida.");
             return View("Index");
         }
 
