@@ -27,14 +27,20 @@ namespace TaskTracker.Controllers
         }
 
     [HttpPost]
-    public async Task<IActionResult> Registrar(string username, string password, string confirmPassword)
+    public async Task<IActionResult> Registrar(string username,string email, string password, string confirmPassword)
         {
-            if(string.IsNullOrEmpty(username) | string.IsNullOrEmpty(password))
+            if(string.IsNullOrEmpty(username) | string.IsNullOrEmpty(password) | string.IsNullOrEmpty(email))
             {
                 ModelState.AddModelError(string.Empty, "Preencha todos os campos");
                 return View();
             }
             //verifica se existe
+            var emailExiste = _context.Usuarios.Any(u => u.Email == email);
+            if (emailExiste)
+            {
+                ModelState.AddModelError(string.Empty, "Este E-mail de usuario já esta em uso");
+                return View();
+            }
             var usuarioExiste = _context.Usuarios.Any(u => u.Nome == username);
             if (usuarioExiste)
             {
@@ -46,7 +52,7 @@ namespace TaskTracker.Controllers
                 ModelState.AddModelError(string.Empty, "As senhas não coicidem.");
                 return View();
             }
-            var novoUsuario = new Usuario{Nome=username};
+            var novoUsuario = new Usuario{Nome=username, Email=email};
             novoUsuario.SenhaHash = _passwordHasher.HashPassword(novoUsuario, password);
             //salva no banco de dados
             _context.Usuarios.Add(novoUsuario);
