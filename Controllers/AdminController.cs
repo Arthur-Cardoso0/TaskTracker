@@ -183,5 +183,45 @@ namespace TaskTracker.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
+         [HttpGet]
+        public IActionResult CriarAdmin()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CriarAdmin(string username, string password, string confirmarSenha)
+        {
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+            {
+                ModelState.AddModelError(string.Empty, "Preencha usuário e senha.");
+                return View();
+            }
+            
+            if (password != confirmarSenha)
+            {
+                ModelState.AddModelError(string.Empty, "As senhas não coincidem.");
+                return View();
+            }
+
+            var jaExiste = await _context.Admin.AnyAsync(a => a.Username == username);
+            if (jaExiste)
+            {
+                ModelState.AddModelError(string.Empty, "Já existe um administrador com esse nome de usuário.");
+                return View();
+            }
+
+            var hasher = new PasswordHasher<Admin>();
+            var novoAdmin = new Admin { Username = username };
+            novoAdmin.SenhaHash = hasher.HashPassword(novoAdmin, password);
+
+            _context.Admin.Add(novoAdmin);
+            await _context.SaveChangesAsync();
+
+            TempData["Sucesso"] = $"Administrador \"{username}\" criado com sucesso.";
+            return RedirectToAction(nameof(Index));
+        }
     }
 }
