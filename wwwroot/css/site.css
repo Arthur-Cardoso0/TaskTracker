@@ -75,11 +75,7 @@ a:hover {
     border: none !important;
 }
 
-/* ============================================
-   ÁREA ADMINISTRATIVA
-   (precisa vir DEPOIS do .navbar genérico acima,
-   para vencer o empate de especificidade CSS)
-============================================ */
+/* ÁREA ADMINISTRATIVA */
 .admin-navbar {
     background-color: var(--admin-navbar-bg) !important;
     padding-top: 0.9rem;
@@ -206,13 +202,140 @@ a:hover {
 }
 
 /* PÁGINA INICIAL */
-.hero {
-    padding: 4rem 1rem;
+.hero-section {
+    position: relative;
+    padding: 4rem 1rem 3rem;
+    overflow: hidden;
 }
 
-.hero h1 {
+.hero-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.35;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.hero-blob-1 {
+    width: 320px;
+    height: 320px;
+    background: var(--brand-primary);
+    top: -80px;
+    left: -100px;
+}
+
+.hero-blob-2 {
+    width: 260px;
+    height: 260px;
+    background: var(--brand-secondary);
+    bottom: -60px;
+    right: -60px;
+}
+
+.hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(79, 70, 229, 0.1);
+    color: var(--brand-primary);
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 0.4em 0.9em;
+    border-radius: 999px;
+}
+
+.hero-title {
+    font-size: 2.6rem;
     font-weight: 700;
     letter-spacing: -0.03em;
+    line-height: 1.15;
+}
+
+.hero-subtitle {
+    color: var(--brand-text-muted);
+    font-size: 1.15rem;
+    max-width: 32rem;
+    margin-top: 0.75rem;
+}
+
+.hero-preview-card {
+    position: relative;
+    z-index: 1;
+    background: var(--brand-surface);
+    border: 1px solid var(--brand-border);
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(31, 35, 51, 0.08);
+    padding: 1.25rem;
+    max-width: 420px;
+    margin: 0 auto;
+    transform: rotate(-1.5deg);
+}
+
+.hero-preview-header {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding-bottom: 0.9rem;
+    margin-bottom: 0.9rem;
+    border-bottom: 1px solid var(--brand-border);
+}
+
+.hero-preview-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--brand-border);
+}
+
+.hero-preview-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 0.2rem;
+    font-size: 0.92rem;
+}
+
+.hero-preview-row + .hero-preview-row {
+    border-top: 1px dashed var(--brand-border);
+}
+
+.features-section {
+    padding: 1rem 1rem 4rem;
+}
+
+.feature-card {
+    background: var(--brand-surface);
+    border: 1px solid var(--brand-border);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+    height: 100%;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(31, 35, 51, 0.08);
+}
+
+.feature-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(79, 70, 229, 0.1);
+    color: var(--brand-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 991px) {
+    .hero-preview-card {
+        margin-top: 2rem;
+        transform: none;
+    }
 }
 
 /* RODAPÉ */
