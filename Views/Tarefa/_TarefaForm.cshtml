@@ -14,8 +14,41 @@
         <select asp-for="Status" class="form-control" asp-items="Html.GetEnumSelectList<TaskTracker.Models.StatusTarefa>()"></select>
         <span asp-validation-for="Status" class="text-danger"></span>
     </div>
+    <div class="mb-3">
+        <label asp-for="Prioridade" class="form-label">Nível de Prioridade</label>
+        <select asp-for="Prioridade" class="form-select" asp-items="Html.GetEnumSelectList<TaskTracker.Models.Prioridade>()"></select>
+    </div>
+    <div class="mb-3">
+        <label asp-for="CategoriaId" class="form-label">Categoria</label>
+        <select asp-for="CategoriaId"class="form-select" asp-items="ViewBag.Categorias" id="categoriaSelect">
+            <option value="">Sem Categoria</option>
+        </select>
+        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalNovaCategoria">
+            <i class="bi bi-plus-circle"></i> Criar Categoria
+        </button>
+        <div class="modal fade" id="modalNovaCategoria" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Adicionar Nova Categoria</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Nome da Categoria</label>
+                    <input type="text" id="nomeNovaCategoria" class="form-control" placeholder="Ex: Projetos, Finanças" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnSalvarCategoria">Salvar e Selecionar</button>
+            </div>
+        </div>
+    </div>
+</div>
+    </div>
     <div class="form-floating mb-3">
-        <input asp-for="Prazo" type="datetime-local" class="form-control" id="campoPrazo" asp-format="{0:yyyy-MM-ddTHH:mm}" placeholder="Defina o prazo" />
+        <input asp-for="Prazo" type="date" name="Prazo" class="form-control" required />
         <label asp-for="Prazo" for="campoPrazo">Prazo para conclusão</label>
         <span asp-validation-for="Prazo" class="text-danger"></span>
     </div>

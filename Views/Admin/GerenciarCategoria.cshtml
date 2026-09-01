@@ -1,0 +1,102 @@
+@model IEnumerable<TaskTracker.Models.Categoria>
+@{
+    ViewData["Title"] = "Gerenciar Categorias";
+    Layout = "_AdminLayout";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 admin-card-header">
+    <h2 class="mb-0">Gerenciar <span class="text-primary">Categorias</span></h2>
+    <a asp-action="Index" class="btn btn-outline-secondary">Voltar ao Painel</a>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 bg-white">
+            <thead class="table-light">
+                <tr>
+                    <th>Nome da Categoria</th>
+                    <th>Criador (Usuário)</th>
+                    <th class="text-end">Ações do Admin</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="3" class="text-center text-muted py-4">Nenhuma categoria cadastrada no sistema.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var categoria in Model)
+                    {
+                        <tr id="linha-categoria-@categoria.Id">
+                            <td class="fw-bold">@categoria.Nome</td>
+                            <td>
+                                @if (categoria.Usuario != null)
+                                {
+                                    <span>@categoria.Usuario.Nome</span>
+                                    <span class="text-muted small">(@categoria.Usuario.Email)</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Usuário Desconhecido</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <form asp-action="ExcluirCategoria" method="post" class="form-excluir m-0"
+                                      data-id="@categoria.Id">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@categoria.Id" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Excluir</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+<script>
+    document.querySelectorAll('.form-excluir').forEach(form => 
+    {
+        form.addEventListener('submit', async function (e) 
+        {
+            e.preventDefault();
+
+            if (!confirm('Tem certeza que deseja excluir esta categoria? As tarefas associadas a ela ficarão sem categoria.')) 
+            {
+                return;
+            }
+
+            const categoriaId = this.getAttribute('data-id');
+            const formData = new FormData(this);
+
+            try {
+                const response = await fetch(this.action, 
+                {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) 
+                {
+                    const linha = document.getElementById(`linha-categoria-${categoriaId}`);
+                    linha.style.transition = "opacity 0.4s";
+                    linha.style.opacity = "0";
+                    setTimeout(() => linha.remove(), 400);
+                } 
+                else 
+                {
+                    alert('Falha ao processar a exclusão no servidor.');
+                }
+            } 
+            catch (error) 
+            {
+                console.error("Erro na comunicação assíncrona:", error);
+                alert('Erro de conexão com o servidor.');
+            }
+        });
+    });
+</script>

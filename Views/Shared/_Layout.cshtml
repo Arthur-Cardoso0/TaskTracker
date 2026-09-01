@@ -1,60 +1,137 @@
 @using System.Security.Claims
+@Html.AntiForgeryToken()
 <!DOCTYPE html>
 <html lang="pt-br">
-    <head>
-        <meta charset="uft-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>@ViewData["Title"] - TaskTracker</title>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-        <link rel="stylesheet" href="~/css/site.css" asp-append-version="true">
-    </head>
-    <body>
-        <header>
-            <nav class="navbar navbar-expand-sm navbar-dark bg-dark mb-4">
-                <div class="container">
-                    <a class="navbar-brand" asp-controller="Home" asp-action="Index">TaskTracker</a>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] - TaskTracker</title>
+    <script>
+        (function () {
+            var stored = localStorage.getItem("tasktracker-theme");
+            var theme = stored === "light" || stored === "dark"
+                ? stored
+                : (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+            document.documentElement.setAttribute("data-bs-theme", theme);
+        })();
+    </script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true">
+</head>
+
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm mb-4">
+            <div class="container">
+                <a class="navbar-brand" asp-controller="Home" asp-action="Index">TaskTracker</a>
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="theme-toggle" aria-pressed="false" aria-label="Ativar modo escuro" title="Ativar modo escuro">
+                        <i class="bi bi-moon-stars-fill"></i>
+                        <i class="bi bi-sun-fill"></i>
+                    </button>
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
                         <span class="navbar-toggler-icon"></span>
                     </button>
-                    <div class="collapse navbar-collapse" id="navMenu">
-                        <ul class="navbar-nav ms-auto">
-                            <li class="nav-item">
-                                <a class="navbar-brand" asp-controller="Home" asp-action="Index">Início</a>
-                            </li>
-                            @if(User.Identity.IsAuthenticated)
+                </div>
+                <div class="collapse navbar-collapse" id="navMenu">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="navbar-brand" asp-controller="Home" asp-action="Index">Início</a>
+                        </li>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            @if (User.HasClaim(ClaimTypes.Role, "Admin"))
                             {
-                                @if(User.HasClaim(ClaimTypes.Role, "Admin"))
-                                {
-                                    <li class="nav-item">
+                                <li class="nav-item">
                                     <a class="nav-link" asp-controller="Admin" asp-action="Index">Gerenciar Tarefas</a>
                                 </li>
-                                }
-                                else{
+                            }
+                            else
+                            {
                                 <li class="nav-item">
                                     <a class="nav-link" asp-controller="Tarefa" asp-action="Index">Minhas Tarefas</a>
                                 </li>
-                                }
                             }
-                        </ul>
-                    </div>
+                        }
+                    </ul>
                 </div>
-            </nav>
-        </header>
-
-        <div class="container">
-            <main class="pb-3" role="main">
-                @RenderBody()
-            </main>
-        </div>
-
-        <footer class="footer text-center border-top mt-5">
-            <div class="container">
-                &copy; @DateTime.Now.Year - TaskTracker
             </div>
-        </footer>
+        </nav>
+    </header>
 
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-        @await RenderSectionAsync("Scripts", required: false)
-    </body>
+    <div class="container">
+        <main class="pb-3" role="main">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="footer text-center border-top mt-5">
+        <div class="container">
+            &copy; @DateTime.Now.Year - TaskTracker
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/theme.js" asp-append-version="true"></script>
+    <script> 
+        document.addEventListener('click', async function (event) 
+        {
+            if (event.target && event.target.id === 'btnSalvarCategoria') 
+            {
+                const inputNome = document.getElementById('nomeNovaCategoria');
+                if (!inputNome) return;
+
+                const nomeCategoria = inputNome.value.trim();
+
+                if (!nomeCategoria) 
+                {
+                    alert('Por favor, informe o nome da categoria.');
+                    return;
+                }
+                const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+                const token = tokenInput ? tokenInput.value : '';
+
+                const formData = new FormData();
+                formData.append('nome', nomeCategoria);
+                formData.append('__RequestVerificationToken', token);
+                
+                try 
+                {
+                    const response = await fetch('/Categoria/CriarRapido',{method: 'POST',body: formData});
+                    if (response.ok) 
+                    {
+                        const data = await response.json();
+                        const select = document.getElementById('categoriaSelect');
+                        if (select) 
+                        {
+                            const novaOpcao = new Option(data.nome, data.id, true, true);
+                            select.add(novaOpcao);
+                        }
+                        inputNome.value = '';
+                        const modalElement = document.getElementById('modalNovaCategoria');
+                        const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+                        modal.hide();
+
+                        document.querySelectorAll('.modal-backdrop').forEach(backdrop => backdrop.remove());
+                        document.body.classList.remove('modal-open');
+                        document.body.style.overflow = '';
+                        document.body.style.paddingRight = '';
+                    }
+                    else 
+                    {
+                        alert('Falha ao processar a criação da categoria no servidor.');
+                    }
+                } 
+                catch (error) {console.error("Erro na comunicação assíncrona:", error);
+                alert('Erro de conexão com o servidor.');
+            }
+        }
+    });
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+
 </html>

@@ -24,8 +24,14 @@
                         <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<TaskTracker.Models.StatusTarefa>()"></select>
                     </div>
                     <div class="form-floating mb-3">
-                        <input asp-for="Prazo" type="datetime-local" class="form-control" id="campoPrazo" asp-format="{0:yyyy-MM-ddTHH:mm}" placeholder="Defina o prazo" />
+                        <input asp-for="Prazo" type="datetime-local" class="form-control" id="campoPrazo" asp-format="{0:yyyy-MM-dd}" placeholder="Defina o prazo" />
                         <label asp-for="Prazo" for="campoPrazo">Prazo para conclusão</label>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Prioridade" class="form-label">Prioridade</label>
+                        <select asp-for="Prioridade" class="form-select" asp-items="Html.GetEnumSelectList<TaskTracker.Models.Prioridade>()">
+                            <option value="">Selecione uma prioridade</option>
+                        </select>
                     </div>
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary w-100">Salvar Alterações</button>
