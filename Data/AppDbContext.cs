@@ -9,5 +9,6 @@ namespace TaskTracker.Data
         public DbSet<Tarefa> Tarefas {get; set;}
         public DbSet<Usuario> Usuarios {get; set;}
         public DbSet<Admin> Admin {get; set;}
+        public DbSet<Categoria> Categorias{get;set;}
     }
 }
