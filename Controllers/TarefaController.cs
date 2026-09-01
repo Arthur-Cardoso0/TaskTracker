@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using TaskTracker.Data;
 using TaskTracker.Models;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace TaskTracker.Controllers
 {
@@ -19,16 +20,42 @@ namespace TaskTracker.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string buscar, StatusTarefa? statusfiltro,Prioridade? prioridadefiltro)
         {
-            var usuarioId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var tarefas = await _context.Tarefas.Where(t => t.UsuarioId == usuarioId).ToListAsync();
+            var usuarioIdstring = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if(string.IsNullOrEmpty(usuarioIdstring)) 
+            return RedirectToAction("login", "Conta");
+            int usuarioId = int.Parse(usuarioIdstring);
+
+            var query = _context.Tarefas.Include(t=>t.Categoria).Where(t=>t.UsuarioId == usuarioId).AsQueryable();
+            if (!string.IsNullOrEmpty(buscar))
+            {
+                query = query.Where(t=>t.Titulo.Contains(buscar) || t.Descricao.Contains(buscar));
+                
+            }
+            if (statusfiltro.HasValue)
+            {
+                query = query.Where(t=>t.Status == statusfiltro.Value);
+            }
+            if (prioridadefiltro.HasValue)
+            {
+                query = query.Where(t=>t.Prioridade == prioridadefiltro.Value);
+            }
+
+            var tarefas = await query.OrderBy(t=>t.Prazo).ToListAsync();
+            ViewBag.FiltroBusca = buscar;
+            ViewBag.FiltroStatus = statusfiltro;
+            ViewBag.FiltroPrioridade = prioridadefiltro;
+            
             return View(tarefas);
         }
 
         [HttpGet]
-        public IActionResult Criar()
+        public async Task<IActionResult> Criar()
         {
+            var usuarioId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var categorias = await _context.Categorias.Where(c=>c.UsuarioId == usuarioId).ToListAsync();
+            ViewBag.Categorias = new SelectList(categorias, "Id", "Nome");
             return View();
         }
 
@@ -36,15 +63,20 @@ namespace TaskTracker.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Criar(Tarefa tarefa)
         {
-            ModelState.Remove(nameof(Tarefa.UsuarioId));
+            var usuarioId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            tarefa.UsuarioId = usuarioId;
+            
+            ModelState.Remove(nameof(Tarefa.Usuario));
+            ModelState.Remove(nameof(Tarefa.Categoria));
              if (!ModelState.IsValid)
             {
+                var categorias = await _context.Categorias.Where(c=>c.UsuarioId == usuarioId).ToListAsync();
+                ViewBag.Categorias = new SelectList(categorias, "Id", "Nome", tarefa.CategoriaId); 
                 return View(tarefa);
             } 
             tarefa.Prazo = DateTime.SpecifyKind(tarefa.Prazo, DateTimeKind.Utc);
 
-            var usuarioId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            tarefa.UsuarioId = usuarioId;
+            
             _context.Tarefas.Add(tarefa);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
@@ -62,6 +94,9 @@ namespace TaskTracker.Controllers
             {
                 return NotFound();
             }
+
+             var categorias = await _context.Categorias.Where(c=>c.UsuarioId == usuarioId).ToListAsync();
+             ViewBag.Categorias = new SelectList(categorias, "Id", "Nome", tarefa.CategoriaId); 
             
             return View(tarefa);
         }
@@ -78,14 +113,20 @@ namespace TaskTracker.Controllers
                 return NotFound();
             }
 
+            ModelState.Remove(nameof(Tarefa.Usuario));
+            ModelState.Remove(nameof(Tarefa.Categoria));
             if (!ModelState.IsValid)
             {
-                return View(tarefa);
+                var categorias = await _context.Categorias.Where(c=>c.UsuarioId == usuarioId).ToListAsync();
+                ViewBag.Categorias = new SelectList(categorias, "Id", "Nome", tarefaAtualizada.CategoriaId); 
+                return View(tarefaAtualizada);
             }
 
             tarefa.Titulo = tarefaAtualizada.Titulo;
             tarefa.Descricao = tarefaAtualizada.Descricao;
             tarefa.Status = tarefaAtualizada.Status;
+            tarefa.Prioridade = tarefaAtualizada.Prioridade;
+            tarefa.CategoriaId = tarefaAtualizada.CategoriaId;
             tarefa.Prazo = DateTime.SpecifyKind(tarefaAtualizada.Prazo, DateTimeKind.Utc);
 
             await _context.SaveChangesAsync();
@@ -97,7 +138,7 @@ namespace TaskTracker.Controllers
         public async Task<IActionResult> Detalhes(int id)
         {
             var usuarioId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var tarefa = await _context.Tarefas.FirstOrDefaultAsync(t => t.Id == id && t.UsuarioId == usuarioId);
+            var tarefa = await _context.Tarefas.Include(t => t.Categoria).FirstOrDefaultAsync(t => t.Id == id && t.UsuarioId == usuarioId);
 
             if(tarefa == null)
             {
