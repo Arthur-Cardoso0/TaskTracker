@@ -8,10 +8,11 @@ Aplicação web para gerenciamento de tarefas pessoais, construída em **ASP.NET
 - Cadastro de conta com nome, e-mail (único) e senha (armazenada com hash via `PasswordHasher`)
 - Login/logout com autenticação por cookie
 - CRUD completo de tarefas: criar, editar, ver detalhes e excluir
-- Cada tarefa tem título, descrição, status (`Pendente`, `Em andamento`, `Concluída`) e prazo
+- Cada tarefa tem título, descrição, status (`Pendente`, `Em andamento`, `Concluída`), prioridade (`Baixa`, `Média`, `Alta`) e prazo
+- Filtro de tarefas por texto, status e prioridade
 - Cada usuário só acessa e gerencia suas próprias tarefas
--**Gerenciamento de categorias personalizadas** para organizar as tarefas de forma eficiente.
-- Alternância dinâmica entre **Modo Claro** e **Modo Escuro** com persistência de preferência.
+- **Criação rápida de categorias personalizadas** direto pelo formulário de tarefa (modal), para organizá-las de forma eficiente
+- Alternância dinâmica entre **Modo Claro** e **Modo Escuro** com persistência de preferência
 
 ### Painel Administrativo
 - Login separado em `/Admin/Login`, com um esquema de autenticação independente do usuário comum
@@ -23,7 +24,7 @@ Aplicação web para gerenciamento de tarefas pessoais, construída em **ASP.NET
 
 ## Tecnologias
 
-- ASP.NET Core MVC (.NET)
+- ASP.NET Core MVC (.NET 10)
 - Entity Framework Core + Npgsql (PostgreSQL)
 - Autenticação por Cookie (dois esquemas: usuário e admin)
 - Bootstrap 5 com suporte a **Modo Claro e Escuro**
@@ -33,8 +34,12 @@ Aplicação web para gerenciamento de tarefas pessoais, construída em **ASP.NET
 ## Como rodar o projeto
 
 ### Pré-requisitos
-- [.NET SDK](https://dotnet.microsoft.com/download) instalado
+- [.NET SDK 10](https://dotnet.microsoft.com/download) instalado
 - PostgreSQL instalado e rodando (local ou em nuvem)
+- Ferramenta `dotnet-ef` instalada globalmente, necessária para aplicar as migrations:
+  ```bash
+  dotnet tool install --global dotnet-ef
+  ```
 
 ### 1. Clonar o repositório
 ```bash
@@ -79,7 +84,7 @@ TaskTracker/
 ├── Controllers/
 │   ├── ContaController.cs       # Cadastro, login e logout de usuário
 │   ├── TarefaController.cs      # CRUD de tarefas do usuário logado
-│   ├── CategoriaController.cs   # Gerenciamento de categorias do usuário
+│   ├── CategoriaController.cs   # Criação rápida de categorias do usuário (via modal)
 │   ├── AdminController.cs       # Painel admin (usuários, tarefas e categorias)
 │   └── HomeController.cs
 ├── Models/
@@ -92,15 +97,20 @@ TaskTracker/
 │   └── AppDbContext.cs
 ├── Views/
 │   ├── Conta/
-│   ├── Tarefa/
-│   ├── Categoria/
-│   ├── Admin/                   # Inclui GerenciarCategorias.cshtml
+│   ├── Tarefa/                  # Inclui o modal de criação rápida de categoria
+│   ├── Admin/                   # Inclui GerenciarCategoria.cshtml
 │   └── Shared/                  # _Layout.cshtml e _AdminLayout.cshtml
 ├── Migrations/
 └── wwwroot/
     ├── css/site.css
     └── js/theme.js
 ```
+
+> **Nota:** `CategoriaController` também expõe as actions `Index`, `Criar` e `Editar`,
+> mas ainda não há views correspondentes em `Views/Categoria/`. Hoje, na prática, a
+> criação de categoria pelo usuário acontece só via `CriarRapido` (chamada assíncrona
+> disparada pelo modal em `Views/Tarefa/_TarefaForm.cshtml`). Vale como próximo passo
+> criar essas views ou remover as actions não utilizadas.
 
 ## Segurança
 
