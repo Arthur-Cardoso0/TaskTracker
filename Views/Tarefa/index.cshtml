@@ -24,9 +24,9 @@
     </a>
 </div>
 
-<div class="card mb-4 shadow-sm border-0">
+<div class="card mb-4 shadow-sm border-0" id="tabela-tarefas">
     <div class="card-body bg-light rounded">
-        <form method="get" asp-action="Index" class="row g-3 align-items-end">
+        <form method="get" asp-action="Index" class="row g-3 align-items-end" id="form-filtro">
             <div class="col-md-4">
                 <label class="form-label text-muted small fw-bold text-uppercase">Buscar texto</label>
                 <input type="text" name="buscar" class="form-control" placeholder="Título ou descrição..." value="@ViewBag.FiltroBusca" />
@@ -34,13 +34,13 @@
             <div class="col-md-3">
                 <label class="form-label text-muted small fw-bold text-uppercase">Status</label>
                 <select name="statusFiltro" class="form-select" asp-items="Html.GetEnumSelectList<StatusTarefa>()">
-                    <option value="">Todos os Status</option>
+                    <!option value="">Todos os Status</!option>
                 </select>
             </div>  
             <div class="col-md-3">
                 <label class="form-label text-muted small fw-bold text-uppercase">Prioridade</label>
                 <select name="prioridadeFiltro" class="form-select" asp-items="Html.GetEnumSelectList<Prioridade>()">
-                    <option value="">Todas as Prioridades</option>
+                    <!option value="">Todas as Prioridades</!option>
                 </select>
             </div>
             <div class="col-md-2 d-flex gap-2">
@@ -55,11 +55,11 @@
     <table class="table table-hover align-middle mb-0 bg-white">
         <thead class="table-light">
             <tr>
-                <th>Título da Tarefa</th>
+                <th><a action="Index" asp-route-ordenarPor="@ViewBag.NomeSortParam">Título</a></th>
                 <th>Descrição</th>
-                <th>Status</th>
-                <th>Prioridade</th>
-                <th>Prazo</th>
+                <th><a action="Index" asp-route-ordenarPor="@ViewBag.StatusSortParam">Status</a></th>
+                <th><a action="Index" asp-route-ordenarPor="@ViewBag.PrioridadeSortParam">Prioridade</a></th>
+                <th><a action="Index" asp-route-ordenarPor="@ViewBag.PrazoSortParam">Prazo</a></th>
                 <th>Ações</th>
             </tr>
         </thead>
@@ -93,9 +93,9 @@
                         <td>@tarefa.Prazo.ToString("dd/MM/yyyy")</td>
                         <td>
                             <div class="d-flex gap-2">
-                                <a asp-action="Detalhes" asp-route-id="@tarefa.Id" class="btn btn-sm btn-info text-white">Ver</a>
-                                <a asp-action="Editar" asp-route-id="@tarefa.Id" class="btn btn-sm btn-warning">Editar</a>
-                                <a asp-action="Excluir" asp-route-id="@tarefa.Id" class="btn btn-sm btn-danger">Excluir</a>
+                                <a asp-action="Detalhes" asp-route-id="@tarefa.Id" class="btn btn-sm btn-outline-info">Ver</a>
+                                <a asp-action="Editar" asp-route-id="@tarefa.Id" class="btn btn-sm btn-outline-warning">Editar</a>
+                                <a asp-action="Excluir" asp-route-id="@tarefa.Id" class="btn btn-sm btn-outline-danger">Excluir</a>
                             </div>
                         </td>
                     </tr>

@@ -26,7 +26,6 @@
     <header>
         <nav class="navbar navbar-expand-lg admin-navbar mb-4 shadow-sm">
             <div class="container">
-                <!-- Logo e Título -->
                 <a class="navbar-brand d-flex align-items-center gap-2" asp-controller="Admin" asp-action="Index">
                     <span class="admin-badge">ADMIN</span>
                     <span class="fw-semibold">Painel Administrativo</span>
@@ -34,7 +33,6 @@
 
                 @if ((bool?)ViewData["ShowAdminNav"] ?? true)
                 {
-                    <!-- Ações à direita no mobile (Botão de Tema + Menu Hamburger) -->
                     <div class="d-flex align-items-center gap-2 d-lg-none">
                         <button type="button" class="theme-toggle btn btn-link text-decoration-none p-1"
                                 aria-pressed="false" aria-label="Alternar tema" title="Alternar tema">
@@ -47,10 +45,7 @@
                             <span class="navbar-toggler-icon"></span>
                         </button>
                     </div>
-
-                    <!-- Conteúdo Colapsável da Navbar -->
                     <div class="collapse navbar-collapse" id="adminNavbarMenu">
-                        <!-- Links Centrais/Esquerdos -->
                         <ul class="navbar-nav me-auto ms-lg-3 mb-2 mb-lg-0 gap-lg-2">
                             <li class="nav-item">
                                 <a class="nav-link px-3 rounded" asp-controller="Admin" asp-action="Index">Usuários</a>
@@ -61,7 +56,6 @@
                             </li>
                         </ul>
 
-                        <!-- Ações do Usuário e Botão de Tema (Desktop) -->
                         <div class="d-none d-lg-flex align-items-center gap-3">
                             <button type="button" class="theme-toggle btn btn-link text-decoration-none p-1"
                                     aria-pressed="false" aria-label="Alternar tema" title="Alternar tema">
@@ -74,7 +68,6 @@
                             </form>
                         </div>
 
-                        <!-- Ações do Usuário (Mobile Dropdown/Lista) -->
                         <div class="d-lg-none border-top pt-3 mt-2 d-flex flex-column gap-2">
                             <div class="d-flex justify-content-between align-items-center px-2">
                                 <span class="admin-user fw-medium text-muted">Logado como:
