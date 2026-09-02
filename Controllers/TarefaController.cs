@@ -14,39 +14,59 @@ namespace TaskTracker.Controllers
         private readonly ILogger<TarefaController> _logger;
         private readonly AppDbContext _context;
 
-        public TarefaController(ILogger<TarefaController> logger,AppDbContext context)
+        public TarefaController(ILogger<TarefaController> logger, AppDbContext context)
         {
             _logger = logger;
             _context = context;
         }
 
-        public async Task<IActionResult> Index(string buscar, StatusTarefa? statusfiltro,Prioridade? prioridadefiltro)
+        public async Task<IActionResult> Index(string buscar, StatusTarefa? statusfiltro, Prioridade? prioridadefiltro, string? ordenarPor)
         {
             var usuarioIdstring = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if(string.IsNullOrEmpty(usuarioIdstring)) 
-            return RedirectToAction("login", "Conta");
+            if (string.IsNullOrEmpty(usuarioIdstring))
+                return RedirectToAction("login", "Conta");
             int usuarioId = int.Parse(usuarioIdstring);
 
-            var query = _context.Tarefas.Include(t=>t.Categoria).Where(t=>t.UsuarioId == usuarioId).AsQueryable();
+            var query = _context.Tarefas.Include(t => t.Categoria).Where(t => t.UsuarioId == usuarioId).AsQueryable();
             if (!string.IsNullOrEmpty(buscar))
             {
-                query = query.Where(t=>t.Titulo.Contains(buscar) || t.Descricao.Contains(buscar));
-                
+                query = query.Where(t => t.Titulo.Contains(buscar) || t.Descricao.Contains(buscar));
+
             }
             if (statusfiltro.HasValue)
             {
-                query = query.Where(t=>t.Status == statusfiltro.Value);
+                query = query.Where(t => t.Status == statusfiltro.Value);
             }
             if (prioridadefiltro.HasValue)
             {
-                query = query.Where(t=>t.Prioridade == prioridadefiltro.Value);
+                query = query.Where(t => t.Prioridade == prioridadefiltro.Value);
             }
 
-            var tarefas = await query.OrderBy(t=>t.Prazo).ToListAsync();
+            query = ordenarPor switch
+            {
+                "nome_asc" => query.OrderBy(t => t.Titulo),
+                "nome_desc" => query.OrderByDescending(t => t.Titulo),
+                "status_asc" => query.OrderBy(t => t.Status),
+                "status_desc" => query.OrderByDescending(t => t.Status),
+                "prazo_asc" => query.OrderBy(t => t.Prazo),
+                "prazo_desc" => query.OrderByDescending(t => t.Prazo),
+                "prioridade_desc" => query.OrderByDescending(t => t.Prioridade),
+                "prioridade_asc" => query.OrderBy(t => t.Prioridade),
+                "data_desc" => query.OrderByDescending(t => t.Id),
+                "data_asc" => query.OrderBy(t => t.Id),
+                _ => query.OrderBy(t => t.Titulo)
+            };
+
             ViewBag.FiltroBusca = buscar;
             ViewBag.FiltroStatus = statusfiltro;
             ViewBag.FiltroPrioridade = prioridadefiltro;
-            
+            ViewBag.OrdenarPor = ordenarPor;
+            ViewBag.NomeSortParam = string.IsNullOrEmpty(ordenarPor) || ordenarPor == "nome_asc" ? "nome_desc" : "nome_asc";
+            ViewBag.PrazoSortParam = ordenarPor == "prazo_asc" ? "prazo_desc" : "prazo_asc";
+            ViewBag.PrioridadeSortParam = ordenarPor == "prioridade_desc" ? "prioridade_asc" : "prioridade_desc";
+            ViewBag.StatusSortParam = ordenarPor == "status_asc" ? "status_desc" : "status_asc";
+
+            var tarefas = await query.ToListAsync();
             return View(tarefas);
         }
 
@@ -54,7 +74,7 @@ namespace TaskTracker.Controllers
         public async Task<IActionResult> Criar()
         {
             var usuarioId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var categorias = await _context.Categorias.Where(c=>c.UsuarioId == usuarioId).ToListAsync();
+            var categorias = await _context.Categorias.Where(c => c.UsuarioId == usuarioId).ToListAsync();
             ViewBag.Categorias = new SelectList(categorias, "Id", "Nome");
             return View();
         }
@@ -65,23 +85,23 @@ namespace TaskTracker.Controllers
         {
             var usuarioId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             tarefa.UsuarioId = usuarioId;
-            
+
             ModelState.Remove(nameof(Tarefa.Usuario));
             ModelState.Remove(nameof(Tarefa.Categoria));
-             if (!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                var categorias = await _context.Categorias.Where(c=>c.UsuarioId == usuarioId).ToListAsync();
-                ViewBag.Categorias = new SelectList(categorias, "Id", "Nome", tarefa.CategoriaId); 
+                var categorias = await _context.Categorias.Where(c => c.UsuarioId == usuarioId).ToListAsync();
+                ViewBag.Categorias = new SelectList(categorias, "Id", "Nome", tarefa.CategoriaId);
                 return View(tarefa);
-            } 
+            }
             tarefa.Prazo = DateTime.SpecifyKind(tarefa.Prazo, DateTimeKind.Utc);
 
-            
+
             _context.Tarefas.Add(tarefa);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
 
-                       
+
         }
 
         [HttpGet]
@@ -90,14 +110,14 @@ namespace TaskTracker.Controllers
             var usuarioId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             var tarefa = await _context.Tarefas.FirstOrDefaultAsync(t => t.Id == id && t.UsuarioId == usuarioId);
 
-            if(tarefa == null)
+            if (tarefa == null)
             {
                 return NotFound();
             }
 
-             var categorias = await _context.Categorias.Where(c=>c.UsuarioId == usuarioId).ToListAsync();
-             ViewBag.Categorias = new SelectList(categorias, "Id", "Nome", tarefa.CategoriaId); 
-            
+            var categorias = await _context.Categorias.Where(c => c.UsuarioId == usuarioId).ToListAsync();
+            ViewBag.Categorias = new SelectList(categorias, "Id", "Nome", tarefa.CategoriaId);
+
             return View(tarefa);
         }
 
@@ -108,7 +128,7 @@ namespace TaskTracker.Controllers
             var usuarioId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             var tarefa = await _context.Tarefas.FirstOrDefaultAsync(t => t.Id == id && t.UsuarioId == usuarioId);
 
-            if(tarefa == null)
+            if (tarefa == null)
             {
                 return NotFound();
             }
@@ -117,8 +137,8 @@ namespace TaskTracker.Controllers
             ModelState.Remove(nameof(Tarefa.Categoria));
             if (!ModelState.IsValid)
             {
-                var categorias = await _context.Categorias.Where(c=>c.UsuarioId == usuarioId).ToListAsync();
-                ViewBag.Categorias = new SelectList(categorias, "Id", "Nome", tarefaAtualizada.CategoriaId); 
+                var categorias = await _context.Categorias.Where(c => c.UsuarioId == usuarioId).ToListAsync();
+                ViewBag.Categorias = new SelectList(categorias, "Id", "Nome", tarefaAtualizada.CategoriaId);
                 return View(tarefaAtualizada);
             }
 
@@ -131,7 +151,7 @@ namespace TaskTracker.Controllers
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
-        
+
         }
 
         [HttpGet]
@@ -140,7 +160,7 @@ namespace TaskTracker.Controllers
             var usuarioId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             var tarefa = await _context.Tarefas.Include(t => t.Categoria).FirstOrDefaultAsync(t => t.Id == id && t.UsuarioId == usuarioId);
 
-            if(tarefa == null)
+            if (tarefa == null)
             {
                 return NotFound();
             }
@@ -149,13 +169,13 @@ namespace TaskTracker.Controllers
         }
 
         [HttpGet]
-        
+
         public async Task<IActionResult> Excluir(int id)
         {
             var usuarioId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             var tarefa = await _context.Tarefas.FirstOrDefaultAsync(t => t.Id == id && t.UsuarioId == usuarioId);
 
-            if(tarefa == null)
+            if (tarefa == null)
             {
                 return NotFound();
             }
@@ -170,7 +190,7 @@ namespace TaskTracker.Controllers
             var usuarioId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             var tarefa = await _context.Tarefas.FirstOrDefaultAsync(t => t.Id == id && t.UsuarioId == usuarioId);
 
-            if(tarefa == null)
+            if (tarefa == null)
             {
                 return NotFound();
             }
