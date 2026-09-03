@@ -1,0 +1,61 @@
+@model IEnumerable<TaskTracker.Models.Board>
+
+@{
+    ViewData["Title"] = "Meus quadros";
+}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <h1>Meus quadros</h1>
+
+        <a asp-action="Criar" class="btn btn-primary">
+            + Novo quadro
+        </a>
+
+    </div>
+
+    <div class="row">
+
+        @foreach (var board in Model)
+        {
+            <div class="col-md-4 mb-4">
+
+                <div class="card shadow-sm">
+
+                    <div class="card-body">
+
+                        <h5 class="card-title">@board.Name</h5>
+
+                        <p class="text-muted">Criado em @board.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</p>
+
+                        <a asp-action="Detalhes" asp-route-id="@board.Id" class="btn btn-outline-primary">Abrir quadro</a>
+
+                    </div>
+
+                </div>
+
+            </div>
+        }
+
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center mt-5">
+
+            <h4>Você ainda não possui quadros.</h4>
+
+            <p class="text-muted">
+                Crie seu primeiro quadro para começar.
+            </p>
+
+            <a asp-action="Criar" class="btn btn-primary">
+                Criar meu primeiro quadro
+            </a>
+
+        </div>
+    }
+
+</div>

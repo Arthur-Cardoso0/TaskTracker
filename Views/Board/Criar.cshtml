@@ -1,0 +1,38 @@
+@model TaskTracker.Models.Board
+
+@{
+    ViewData["Title"] = "Novo quadro";
+}
+
+<div class="container mt-4">
+
+    <h1>Novo quadro</h1>
+
+    <form asp-action="Criar" method="post">
+
+        <div class="mb-3">
+            <label asp-for="Name" class="form-label">
+                Nome do quadro
+            </label>
+
+            <input asp-for="Name"
+                   class="form-control"
+                   placeholder="Ex: Meu projeto" />
+
+            <span asp-validation-for="Name"
+                  class="text-danger">
+            </span>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Criar quadro
+        </button>
+
+        <a asp-action="Index"
+           class="btn btn-secondary">
+            Cancelar
+        </a>
+
+    </form>
+
+</div>

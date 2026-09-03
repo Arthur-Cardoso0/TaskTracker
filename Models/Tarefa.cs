@@ -20,5 +20,8 @@ public enum StatusTarefa{Pendente, [Display(Name = "Em Andamento")]EmAndamento, 
         public int UsuarioId {get; set;}
         public Usuario Usuario {get; set;}
 
+        public int BoardListId {get; set;}
+        public BoardList BoardList {get; set;}
+
     }
 }

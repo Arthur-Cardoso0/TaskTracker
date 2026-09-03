@@ -2,9 +2,17 @@
 @{
     ViewData["Title"] = "Criar Tarefa";
 }
+@if (ViewBag.NomeLista != null)
+{
+    <div class="alert alert-info">
+        Adicionando tarefa em:
+        <strong>@ViewBag.NomeLista</strong>
+    </div>
+}
 <h2>Criar Nova Tarefa</h2>
 <form asp-action="Criar" method="post">
+     <input type="hidden"asp-for="BoardListId" />
     @await Html.PartialAsync("_TarefaForm", Model)
-    <button type="submit" class="btn btn-primary">Salvar</button>
-    <a asp-action="Index" class="btn btn-secondary">Voltar</a>
+    <button type="submit" class="btn btn-primary">Criar Tarefa</button>
+    <a asp-controller="Board" asp-action="Detalhes" asp-route-id="@Model.BoardListId" class="btn btn-secondary">Voltar</a>
 </form>

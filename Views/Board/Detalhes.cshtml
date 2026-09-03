@@ -1,0 +1,102 @@
+@model TaskTracker.Models.Board
+
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<div class="container-fluid mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <h1>@Model.Name</h1>
+
+        <form asp-controller="BoardList" asp-action="Criar" method="post" class="d-flex gap-2">
+
+            <input type="hidden" name="boardId" value="@Model.Id" />
+
+            <input type="text" name="name" class="form-control" placeholder="Nome da lista" required />
+
+            <button type="submit" class="btn btn-primary">
+                Adicionar lista
+            </button>
+
+        </form>
+
+    </div>
+
+    <div class="row">
+
+        @foreach (var list in Model.Lists.OrderBy(l => l.Position))
+        {
+            <div class="col-md-3">
+
+                <div class="card">
+
+                    <div class="card-header">
+                        <strong>@list.Name</strong>
+                    </div>
+
+                    <div class="card-body">
+
+                        @foreach (var tarefa in list.Tarefas.OrderBy(t => t.Id))
+                        {
+                            <div class="card mb-3 shadow-sm task-card">
+                                <div class="card-body">
+
+                                    <h6 class="card-title mb-2">
+                                        @tarefa.Titulo
+                                    </h6>
+
+                                    <span class="badge bg-secondary mb-2">
+                                        @tarefa.Prioridade
+                                    </span>
+                                    
+                                    @if (tarefa.Categoria != null)
+                                    {
+                                        <span class="badge bg-light text-dark border">
+                                            @tarefa.Categoria.Nome
+                                        </span>
+                                    }
+
+                                    @if (!string.IsNullOrWhiteSpace(tarefa.Descricao))
+                                    {
+                                        <p class="card-text text-muted small">
+                                            @tarefa.Descricao
+                                        </p>
+                                    }
+
+                                    <div class="d-flex justify-content-between align-items-center mt-3">
+
+                                        @if (tarefa.Prazo != DateTime.MinValue)
+                                        {
+                                            <small class="text-muted">
+                                                @tarefa.Prazo.ToString("dd/MM/yyyy")
+                                            </small>
+                                        }
+
+                                        <a asp-controller="Tarefa" asp-action="Editar" asp-route-id="@tarefa.Id"
+                                           class="btn btn-sm btn-outline-secondary">
+                                            Editar
+                                        </a>
+
+                                    </div>
+
+                                </div>
+                            </div>
+                        }
+
+                        <a asp-controller="Tarefa" asp-action="Criar" asp-route-boardListId="@list.Id"
+                           class="btn btn-sm btn-light w-100">
+                            + Adicionar tarefa
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+        }
+
+    </div>
+
+</div>

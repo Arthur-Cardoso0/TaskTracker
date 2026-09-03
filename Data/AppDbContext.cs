@@ -10,5 +10,7 @@ namespace TaskTracker.Data
         public DbSet<Usuario> Usuarios {get; set;}
         public DbSet<Admin> Admin {get; set;}
         public DbSet<Categoria> Categorias{get;set;}
+        public DbSet<Board> Boards { get; set; }
+        public DbSet<BoardList> BoardLists { get; set; }
     }
 }

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TaskTracker.Data;
@@ -11,9 +12,11 @@ using TaskTracker.Data;
 namespace TaskTracker.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260909134829_AddBoardsAndLists")]
+    partial class AddBoardsAndLists
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -86,7 +89,7 @@ namespace TaskTracker.Migrations
 
                     b.HasIndex("BoardId");
 
-                    b.ToTable("BoardLists");
+                    b.ToTable("BoardList");
                 });
 
             modelBuilder.Entity("TaskTracker.Models.Categoria", b =>
@@ -215,7 +218,7 @@ namespace TaskTracker.Migrations
             modelBuilder.Entity("TaskTracker.Models.Tarefa", b =>
                 {
                     b.HasOne("TaskTracker.Models.BoardList", "BoardList")
-                        .WithMany("Tarefas")
+                        .WithMany("Tasks")
                         .HasForeignKey("BoardListId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -244,7 +247,7 @@ namespace TaskTracker.Migrations
 
             modelBuilder.Entity("TaskTracker.Models.BoardList", b =>
                 {
-                    b.Navigation("Tarefas");
+                    b.Navigation("Tasks");
                 });
 
             modelBuilder.Entity("TaskTracker.Models.Categoria", b =>

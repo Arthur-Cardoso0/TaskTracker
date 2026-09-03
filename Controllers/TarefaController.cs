@@ -71,39 +71,109 @@ namespace TaskTracker.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Criar()
+        public async Task<IActionResult> Criar(int? boardListId)
         {
-            var usuarioId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var categorias = await _context.Categorias.Where(c => c.UsuarioId == usuarioId).ToListAsync();
-            ViewBag.Categorias = new SelectList(categorias, "Id", "Nome");
-            return View();
+            var usuarioId = int.Parse(
+                User.FindFirstValue(ClaimTypes.NameIdentifier)!
+            );
+
+            var categorias = await _context.Categorias
+                .Where(c => c.UsuarioId == usuarioId)
+                .ToListAsync();
+
+            ViewBag.Categorias = new SelectList(
+                categorias,
+                "Id",
+                "Nome"
+            );
+
+            var tarefa = new Tarefa();
+
+            if (boardListId.HasValue)
+            {
+                var lista = await _context.BoardLists
+                    .Include(l => l.Board)
+                    .FirstOrDefaultAsync(l =>
+                        l.Id == boardListId.Value &&
+                        l.Board.OwnerId == usuarioId
+                    );
+
+                if (lista == null)
+                {
+                    return NotFound();
+                }
+
+                tarefa.BoardListId = lista.Id;
+
+                ViewBag.NomeLista = lista.Name;
+            }
+
+            return View(tarefa);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Criar(Tarefa tarefa)
         {
-            var usuarioId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var usuarioId = int.Parse(
+                User.FindFirstValue(ClaimTypes.NameIdentifier)!
+            );
+
             tarefa.UsuarioId = usuarioId;
+
+            var lista = await _context.BoardLists
+                .Include(l => l.Board)
+                .FirstOrDefaultAsync(l =>
+                    l.Id == tarefa.BoardListId &&
+                    l.Board.OwnerId == usuarioId
+                );
+
+            if (lista == null)
+            {
+                ModelState.AddModelError(
+                    nameof(Tarefa.BoardListId),
+                    "A lista selecionada não é válida."
+                );
+            }
 
             ModelState.Remove(nameof(Tarefa.Usuario));
             ModelState.Remove(nameof(Tarefa.Categoria));
+            ModelState.Remove(nameof(Tarefa.BoardList));
+
             if (!ModelState.IsValid)
             {
-                var categorias = await _context.Categorias.Where(c => c.UsuarioId == usuarioId).ToListAsync();
-                ViewBag.Categorias = new SelectList(categorias, "Id", "Nome", tarefa.CategoriaId);
+                var categorias = await _context.Categorias
+                    .Where(c => c.UsuarioId == usuarioId)
+                    .ToListAsync();
+
+                ViewBag.Categorias = new SelectList(
+                    categorias,
+                    "Id",
+                    "Nome",
+                    tarefa.CategoriaId
+                );
+
+                if (lista != null)
+                {
+                    ViewBag.NomeLista = lista.Name;
+                }
+
                 return View(tarefa);
             }
-            tarefa.Prazo = DateTime.SpecifyKind(tarefa.Prazo, DateTimeKind.Utc);
 
+            tarefa.Prazo = DateTime.SpecifyKind(
+                tarefa.Prazo,
+                DateTimeKind.Utc
+            );
+
+            tarefa.CriadaEm = DateTime.UtcNow;
 
             _context.Tarefas.Add(tarefa);
+
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
 
-
+            return RedirectToAction("Detalhes", "Board",new { id = lista!.BoardId });
         }
-
         [HttpGet]
         public async Task<IActionResult> Editar(int id)
         {
