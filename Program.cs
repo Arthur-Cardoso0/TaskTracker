@@ -25,27 +25,23 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 var app = builder.Build();
 
-using(var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();;
-    db.Database.Migrate();
-}
-
-using(var scope = app.Services.CreateScope())
+using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<AppDbContext>();
 
+    context.Database.Migrate();
+
     if (!context.Admin.Any())
     {
-        var username = builder.Configuration["AdminSeed:Username"]??"admin";
-        var password = builder.Configuration["AdminSeed:Password"]??"Admin123";
+        var username = builder.Configuration["AdminSeed:Username"] ?? "admin";
+        var password = builder.Configuration["AdminSeed:Password"] ?? "Admin123";
 
         var hasher = new PasswordHasher<Admin>();
         var admin = new Admin
         {
-           Username = username,
-           SenhaHash = hasher.HashPassword(null!, password) 
+            Username = username,
+            SenhaHash = hasher.HashPassword(null!, password)
         };
 
         context.Admin.Add(admin);
