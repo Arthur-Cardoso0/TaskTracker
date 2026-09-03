@@ -27,6 +27,12 @@ var app = builder.Build();
 
 using(var scope = app.Services.CreateScope())
 {
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();;
+    db.Database.Migrate();
+}
+
+using(var scope = app.Services.CreateScope())
+{
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<AppDbContext>();
 
@@ -53,7 +59,10 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+if (app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseStaticFiles(); 
 
 app.UseRouting();
