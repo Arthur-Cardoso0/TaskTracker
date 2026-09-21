@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TaskTracker.Data;
 using TaskTracker.Models;
+using Npgsql;
 
 namespace TaskTracker.Controllers
 
@@ -27,6 +28,7 @@ namespace TaskTracker.Controllers
         }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Registrar(string username,string email, string password, string confirmPassword)
         {
             if(string.IsNullOrEmpty(username) | string.IsNullOrEmpty(password) | string.IsNullOrEmpty(email))
@@ -56,7 +58,17 @@ namespace TaskTracker.Controllers
             novoUsuario.SenhaHash = _passwordHasher.HashPassword(novoUsuario, password);
             //salva no banco de dados
             _context.Usuarios.Add(novoUsuario);
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch(DbUpdateException ex)when(ex.InnerException is PostgresException pg &&
+            pg.SqlState == PostgresErrorCodes.UniqueViolation &&(pg.ConstraintName == "IX_Usuarios_Nome" ||
+            pg.ConstraintName == "IX_Usuarios_Email"))
+            {
+                ModelState.AddModelError(string.Empty, "Este nome de usuario ou e-mail ja esta em uso.");
+                return View();
+            }
 
             return RedirectToAction("Login");
         }
@@ -67,6 +79,7 @@ namespace TaskTracker.Controllers
     public IActionResult Login() => View("Index");
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Login(string Username, string Password)
     {
         var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Nome == Username);
@@ -97,6 +110,7 @@ namespace TaskTracker.Controllers
 
     [HttpPost]
     [Authorize]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {
         // Remove o Cookie do navegador

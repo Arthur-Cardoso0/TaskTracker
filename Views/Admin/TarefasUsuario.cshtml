@@ -14,21 +14,39 @@
         <h5 class="card-title mb-3">Adicionar Tarefa para @Model.Nome</h5>
         <form asp-action="CriarTarefaAdmin" method="post" class="row g-3 align-items-center">
             <input type="hidden" name="usuarioId" value="@Model.Id" />
-            
+            <div asp-validation-summary="All" class="text-danger col-12"></div>
+
+            <div class="col-md-4">
+                <label for="BoardListId" class="form-label">
+                    Quadro / Lista
+                </label>
+
+                <select id="BoardListId" name="BoardListId" class="form-select" asp-items="ViewBag.Listas" required>
+                    <option value="">Selecione uma lista</option>
+                </select>
+
+                <small class="text-muted">
+                    Se não houver opções, o usuário precisa criar
+                    um quadro e uma lista primeiro.
+                </small>
+            </div>
+
             <div class="col-md-3">
                 <input type="text" name="Titulo" class="form-control" placeholder="Título da Tarefa" required />
             </div>
             <div class="col-md-3">
-              <textarea name="Descricao" class="form-control" rows="3" required></textarea>
+                <textarea name="Descricao" class="form-control" rows="3" required></textarea>
             </div>
             <div class="col-md-3">
-                <select name="Prioridade" class="form-select" asp-items="Html.GetEnumSelectList<TaskTracker.Models.Prioridade>()"></select>
+                <select name="Prioridade" class="form-select"
+                        asp-items="Html.GetEnumSelectList<TaskTracker.Models.Prioridade>()"></select>
             </div>
             <div class="col-md-2">
                 <input type="date" name="Prazo" class="form-control" required />
             </div>
             <div class="col-md-2">
-                <select name="Status" class="form-select" asp-items="Html.GetEnumSelectList<TaskTracker.Models.StatusTarefa>()"></select>
+                <select name="Status" class="form-select"
+                        asp-items="Html.GetEnumSelectList<TaskTracker.Models.StatusTarefa>()"></select>
             </div>
             <div class="col-md-2">
                 <button type="submit" class="btn btn-primary w-100">Adicionar</button>
@@ -41,14 +59,15 @@
         <form method="get" asp-action="TarefasUsuario" asp-route-id="@Model.Id" class="row g-3 align-items-end">
             <div class="col-md-4">
                 <label class="form-label text-muted small fw-bold text-uppercase">Buscar texto</label>
-                <input type="text" name="buscar" class="form-control" placeholder="Título ou descrição..." value="@ViewBag.FiltroBusca" />
-            </div>      
+                <input type="text" name="buscar" class="form-control" placeholder="Título ou descrição..."
+                       value="@ViewBag.FiltroBusca" />
+            </div>
             <div class="col-md-3">
                 <label class="form-label text-muted small fw-bold text-uppercase">Status</label>
                 <select name="statusFiltro" class="form-select" asp-items="Html.GetEnumSelectList<StatusTarefa>()">
                     <option value="">Todos os Status</option>
                 </select>
-            </div>  
+            </div>
             <div class="col-md-3">
                 <label class="form-label text-muted small fw-bold text-uppercase">Prioridade</label>
                 <select name="prioridadeFiltro" class="form-select" asp-items="Html.GetEnumSelectList<Prioridade>()">
@@ -57,7 +76,8 @@
             </div>
             <div class="col-md-2 d-flex gap-2">
                 <button type="submit" class="btn btn-primary w-100">Filtrar</button>
-                <a asp-action="TarefasUsuario" asp-route-id="@Model.Id" class="btn btn-outline-secondary w-100">Limpar</a>
+                <a asp-action="TarefasUsuario" asp-route-id="@Model.Id"
+                   class="btn btn-outline-secondary w-100">Limpar</a>
             </div>
         </form>
     </div>
@@ -77,9 +97,11 @@
                 </tr>
             </thead>
             <tbody>
-                @if(Model.Tarefas == null || !Model.Tarefas.Any())
+                @if (Model.Tarefas == null || !Model.Tarefas.Any())
                 {
-                    <tr><td colspan="6" class="text-center text-muted py-4">Este usuário não possui tarefas.</td></tr>
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">Este usuário não possui tarefas.</td>
+                    </tr>
                 }
                 else
                 {
@@ -87,7 +109,9 @@
                     {
                         <tr>
                             <td>@tarefa.Titulo</td>
-                            <td><p class="d-block text-dark">@tarefa.Descricao</p></td>
+                            <td>
+                                <p class="d-block text-dark">@tarefa.Descricao</p>
+                            </td>
                             <td class="text-muted">@tarefa.Prioridade</td>
                             <td>
                                 @if (tarefa.Status.ToString() == "Concluida")
@@ -106,8 +130,10 @@
                             <td>@tarefa.Prazo.ToString("dd/MM/yyyy")</td>
                             <td class="text-end">
                                 <div class="d-flex gap-2 justify-content-end">
-                                    <a asp-action="EditarTarefaAdmin" asp-route-id="@tarefa.Id" class="btn btn-sm btn-outline-secondary">Editar</a>
-                                    <form asp-action="ExcluirTarefaAdmin" method="post" onsubmit="return confirm('Excluir esta tarefa do usuário?');" class="m-0">
+                                    <a asp-action="EditarTarefaAdmin" asp-route-id="@tarefa.Id"
+                                       class="btn btn-sm btn-outline-secondary">Editar</a>
+                                    <form asp-action="ExcluirTarefaAdmin" method="post"
+                                          onsubmit="return confirm('Excluir esta tarefa do usuário?');" class="m-0">
                                         <input type="hidden" name="id" value="@tarefa.Id" />
                                         <input type="hidden" name="usuarioId" value="@Model.Id" />
                                         <button type="submit" class="btn btn-sm btn-outline-danger">Excluir</button>
