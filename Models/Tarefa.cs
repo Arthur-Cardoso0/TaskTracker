@@ -15,7 +15,7 @@ public enum StatusTarefa{Pendente, [Display(Name = "Em Andamento")]EmAndamento, 
         public DateTime CriadaEm {get; set;} = DateTime.UtcNow;
         public Prioridade Prioridade{get;set;} = Prioridade.Media;
         public int? CategoriaId{get;set;}
-        public Categoria? Categoria{get;set;}
+        public Categoria Categoria{get;set;}
 
         public int UsuarioId {get; set;}
         public Usuario Usuario {get; set;}

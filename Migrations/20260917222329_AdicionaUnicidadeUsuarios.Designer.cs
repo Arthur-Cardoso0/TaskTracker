@@ -12,8 +12,8 @@ using TaskTracker.Data;
 namespace TaskTracker.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260909134829_AddBoardsAndLists")]
-    partial class AddBoardsAndLists
+    [Migration("20260917222329_AdicionaUnicidadeUsuarios")]
+    partial class AdicionaUnicidadeUsuarios
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -89,7 +89,7 @@ namespace TaskTracker.Migrations
 
                     b.HasIndex("BoardId");
 
-                    b.ToTable("BoardList");
+                    b.ToTable("BoardLists");
                 });
 
             modelBuilder.Entity("TaskTracker.Models.Categoria", b =>
@@ -179,6 +179,12 @@ namespace TaskTracker.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("Nome")
+                        .IsUnique();
+
                     b.ToTable("Usuarios");
                 });
 
@@ -218,7 +224,7 @@ namespace TaskTracker.Migrations
             modelBuilder.Entity("TaskTracker.Models.Tarefa", b =>
                 {
                     b.HasOne("TaskTracker.Models.BoardList", "BoardList")
-                        .WithMany("Tasks")
+                        .WithMany("Tarefas")
                         .HasForeignKey("BoardListId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -247,7 +253,7 @@ namespace TaskTracker.Migrations
 
             modelBuilder.Entity("TaskTracker.Models.BoardList", b =>
                 {
-                    b.Navigation("Tasks");
+                    b.Navigation("Tarefas");
                 });
 
             modelBuilder.Entity("TaskTracker.Models.Categoria", b =>

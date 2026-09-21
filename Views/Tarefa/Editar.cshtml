@@ -2,9 +2,21 @@
 @{
     ViewData["Title"] = "Editar Tarefa";
 }
+@if (ViewBag.BoardId != null)
+{
+    <a asp-controller="Board"
+       asp-action="Detalhes"
+       asp-route-id="@ViewBag.BoardId"
+       class="btn btn-secondary">Voltar</a>
+}
+else
+{
+    <a asp-controller="Board"
+       asp-action="Index"
+       class="btn btn-secondary">Voltar aos quadros</a>
+}
 <h2>Editar Tarefa</h2>
 <form asp-action="Editar" asp-route-id="@Model.Id" method="post">
     @await Html.PartialAsync("_TarefaForm", Model)
     <button type="submit" class="btn btn-primary">Salvar Alterações</button>
-    <a asp-controller="Board" asp-action="Detalhes" asp-route-id="@Model.BoardListId" class="btn btn-secondary">Voltar</a>
 </form>

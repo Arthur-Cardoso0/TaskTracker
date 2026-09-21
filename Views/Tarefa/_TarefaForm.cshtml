@@ -23,6 +23,7 @@
         <select asp-for="CategoriaId"class="form-select" asp-items="ViewBag.Categorias" id="categoriaSelect">
             <option value="">Sem Categoria</option>
         </select>
+        <span asp-validation-for="CategoriaId" class="text-danger"></span>
         <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalNovaCategoria">
             <i class="bi bi-plus-circle"></i> Criar Categoria
         </button>

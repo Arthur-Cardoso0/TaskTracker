@@ -1,0 +1,25 @@
+@model TaskTracker.Models.Categoria
+
+@{
+    ViewData["Title"] = "Excluir categoria";
+}
+
+<h1>Excluir categoria</h1>
+
+<p>
+    Deseja excluir a categoria <strong>@Model.Nome</strong>?
+</p>
+
+<div class="alert alert-warning">
+    As tarefas serão mantidas, mas ficarão sem essa categoria.
+</div>
+
+<form asp-action="Excluir" asp-route-id="@Model.Id" method="post">
+    <button type="submit" class="btn btn-danger">
+        Confirmar exclusão
+    </button>
+
+    <a asp-action="Index" class="btn btn-secondary">
+        Cancelar
+    </a>
+</form>

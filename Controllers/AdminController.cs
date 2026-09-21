@@ -8,12 +8,26 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using TaskTracker.Data;
 using TaskTracker.Models;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Reflection.PortableExecutable;
+using Npgsql;
 
 namespace TaskTracker.Controllers
 {
     [Authorize(AuthenticationSchemes = "AdminScheme")]
     public class AdminController : Controller
     {
+        private async Task CarregarListasAsync(int usuarioId)
+        {
+            var listas = await _context.BoardLists.Where(l => l.Board.OwnerId == usuarioId)
+            .OrderBy(l => l.Board.Name).ThenBy(l => l.Position).Select(l => new
+            {
+                l.Id,
+                Nome = l.Board.Name + "/" + l.Name
+            }).ToListAsync();
+
+            ViewBag.Listas = new SelectList(listas, "Id", "Nome");
+        }
         private readonly AppDbContext _context;
 
         public AdminController(AppDbContext context)
@@ -43,9 +57,9 @@ namespace TaskTracker.Controllers
             var hasher = new PasswordHasher<Admin>();
             var resultado = hasher.VerifyHashedPassword(admin, admin.SenhaHash, senha);
 
-            if(resultado == PasswordVerificationResult.Failed)
+            if (resultado == PasswordVerificationResult.Failed)
             {
-                ModelState.AddModelError(string.Empty,"senha invalida");
+                ModelState.AddModelError(string.Empty, "senha invalida");
                 return View();
             }
 
@@ -56,7 +70,7 @@ namespace TaskTracker.Controllers
                 new Claim(ClaimTypes.Role, "Admin")
             };
 
-            var claimsIdentity =  new ClaimsIdentity(claims, "AdminScheme");
+            var claimsIdentity = new ClaimsIdentity(claims, "AdminScheme");
             await HttpContext.SignInAsync("AdminScheme", new ClaimsPrincipal(claimsIdentity));
             return RedirectToAction("Index", "Admin");
         }
@@ -64,7 +78,7 @@ namespace TaskTracker.Controllers
         public async Task<IActionResult> Index()
         {
             var usuarios = await _context.Usuarios.Include(u => u.Tarefas).ToListAsync();
-            return View(usuarios);  
+            return View(usuarios);
         }
 
         [HttpPost]
@@ -91,7 +105,7 @@ namespace TaskTracker.Controllers
         public async Task<IActionResult> TarefasUsuario(int id, string buscar, StatusTarefa? statusfiltro, Prioridade? prioridadefiltro)
         {
             var usuario = await _context.Usuarios.Include(u => u.Tarefas).FirstOrDefaultAsync(u => u.Id == id);
-            if (usuario == null)return NotFound();
+            if (usuario == null) return NotFound();
 
             var query = _context.Tarefas.Where(t => t.UsuarioId == id);
             if (!string.IsNullOrWhiteSpace(buscar))
@@ -102,45 +116,87 @@ namespace TaskTracker.Controllers
             {
                 query = query.Where(t => t.Status == statusfiltro.Value);
             }
-             if (prioridadefiltro.HasValue)
+            if (prioridadefiltro.HasValue)
             {
                 query = query.Where(t => t.Prioridade == prioridadefiltro.Value);
             }
             usuario.Tarefas = await query.ToListAsync();
             ViewBag.FiltroBusca = buscar;
+            await CarregarListasAsync(id);
             return View(usuario);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CriarTarefaAdmin(int usuarioId, Tarefa tarefa)
+        public async Task<IActionResult> CriarTarefaAdmin(int usuarioId, [Bind("Titulo,Descricao,Status,Prioridade,Prazo,BoardListId")] Tarefa tarefa)
         {
-            tarefa.UsuarioId = usuarioId;
-            tarefa.Prazo = DateTime.SpecifyKind(tarefa.Prazo, DateTimeKind.Utc);
+            var usuario = await _context.Usuarios.Include(u => u.Tarefas).FirstOrDefaultAsync(u => u.Id == usuarioId);
+
+            if (usuario == null)
+            {
+                return NotFound();
+            }
+
+            var listaValida = await _context.BoardLists.AnyAsync(l => l.Id == tarefa.BoardListId && l.Board.OwnerId == usuarioId
+            );
+
+            if (!listaValida)
+            {
+                ModelState.AddModelError(nameof(Tarefa.BoardListId), "Selecione uma lista pertencente a este usuário.");
+            }
+
+            if (string.IsNullOrWhiteSpace(tarefa.Titulo))
+            {
+                ModelState.AddModelError(nameof(Tarefa.Titulo), "Informe o título.");
+            }
+
+            if (string.IsNullOrWhiteSpace(tarefa.Descricao))
+            {
+                ModelState.AddModelError(nameof(Tarefa.Descricao), "Informe a descrição.");
+            }
+
+            if (tarefa.Prazo == default)
+            {
+                ModelState.AddModelError(nameof(Tarefa.Prazo), "Informe um prazo válido.");
+            }
+
             ModelState.Remove(nameof(Tarefa.Usuario));
+            ModelState.Remove(nameof(Tarefa.Categoria));
+            ModelState.Remove(nameof(Tarefa.BoardList));
+
+            if (!ModelState.IsValid)
+            {
+                await CarregarListasAsync(usuarioId);
+                return View("TarefasUsuario", usuario);
+            }
+
+            tarefa.UsuarioId = usuarioId;
+            tarefa.CriadaEm = DateTime.UtcNow;
+            tarefa.Prazo = DateTime.SpecifyKind(tarefa.Prazo, DateTimeKind.Utc);
 
             _context.Tarefas.Add(tarefa);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(TarefasUsuario), new{id = usuarioId});
+
+            return RedirectToAction(nameof(TarefasUsuario), new { id = usuarioId });
         }
 
         [HttpGet]
         public async Task<IActionResult> EditarTarefaAdmin(int id)
         {
             var tarefa = await _context.Tarefas.FindAsync(id);
-            if(tarefa == null)
+            if (tarefa == null)
             {
                 return NotFound();
             }
-            return View(tarefa);   
+            return View(tarefa);
         }
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditarTarefaAdmin(int id, Tarefa tarefaAtualizada)
         {
             var tarefa = await _context.Tarefas.FindAsync(id);
-            if(tarefa == null)
+            if (tarefa == null)
             {
                 return NotFound();
             }
@@ -160,7 +216,7 @@ namespace TaskTracker.Controllers
             tarefa.Prazo = DateTime.SpecifyKind(tarefaAtualizada.Prazo, DateTimeKind.Utc);
 
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(TarefasUsuario), new{id = tarefa.UsuarioId});
+            return RedirectToAction(nameof(TarefasUsuario), new { id = tarefa.UsuarioId });
         }
 
         [HttpPost]
@@ -168,19 +224,19 @@ namespace TaskTracker.Controllers
         public async Task<IActionResult> ExcluirTarefaAdmin(int id, int usuarioId)
         {
             var tarefa = await _context.Tarefas.FindAsync(id);
-            if(tarefa != null)
+            if (tarefa != null)
             {
                 _context.Tarefas.Remove(tarefa);
                 await _context.SaveChangesAsync();
             }
-            return RedirectToAction(nameof(TarefasUsuario), new{id = usuarioId});
+            return RedirectToAction(nameof(TarefasUsuario), new { id = usuarioId });
         }
 
         [HttpGet]
         public async Task<IActionResult> EditarUsuario(int id)
         {
             var usuario = await _context.Usuarios.FindAsync(id);
-            if(usuario == null)
+            if (usuario == null)
             {
                 return NotFound();
             }
@@ -189,21 +245,68 @@ namespace TaskTracker.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditarUsuario(int id, Usuario dadosAtualizados)
+        public async Task<IActionResult> EditarUsuario(int id,[Bind("Nome,Email")] Usuario dadosAtualizados)
         {
             var usuario = await _context.Usuarios.FindAsync(id);
-            if(usuario == null)
+
+            if (usuario == null)
             {
                 return NotFound();
             }
-            
+
+            dadosAtualizados.Id = id;
+
+            if (string.IsNullOrWhiteSpace(dadosAtualizados.Nome))
+            {
+                ModelState.AddModelError(nameof(Usuario.Nome),"Informe o nome do usuário.");
+            }
+
+            var nomeExiste = await _context.Usuarios.AnyAsync(u => u.Id != id && u.Nome == dadosAtualizados.Nome
+            );
+
+            if (nomeExiste)
+            {
+                ModelState.AddModelError(nameof(Usuario.Nome),"Este nome de usuário já está em uso.");
+            }
+
+            var emailExiste = await _context.Usuarios.AnyAsync(u => u.Id != id && u.Email == dadosAtualizados.Email
+            );
+
+            if (emailExiste)
+            {
+                ModelState.AddModelError(nameof(Usuario.Email),"Este e-mail já está em uso.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(dadosAtualizados);
+            }
+
             usuario.Nome = dadosAtualizados.Nome;
             usuario.Email = dadosAtualizados.Email;
-            await _context.SaveChangesAsync();
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex) when (
+                ex.InnerException is PostgresException pg &&
+                pg.SqlState == PostgresErrorCodes.UniqueViolation &&
+                (pg.ConstraintName == "IX_Usuarios_Nome" ||
+                 pg.ConstraintName == "IX_Usuarios_Email"))
+            {
+                ModelState.AddModelError(
+                    string.Empty,
+                    "Este nome de usuário ou e-mail já está em uso."
+                );
+
+                return View(dadosAtualizados);
+            }
+
             return RedirectToAction(nameof(Index));
         }
 
-         [HttpGet]
+        [HttpGet]
         public IActionResult CriarAdmin()
         {
             return View();
@@ -218,7 +321,7 @@ namespace TaskTracker.Controllers
                 ModelState.AddModelError(string.Empty, "Preencha usuário e senha.");
                 return View();
             }
-            
+
             if (password != confirmarSenha)
             {
                 ModelState.AddModelError(string.Empty, "As senhas não coincidem.");
@@ -255,7 +358,7 @@ namespace TaskTracker.Controllers
         {
             var categoria = await _context.Categorias.FindAsync(id);
             if (categoria != null)
-            {  
+            {
                 var tarefasAssociadas = await _context.Tarefas.Where(t => t.CategoriaId == id).ToListAsync();
                 foreach (var tarefa in tarefasAssociadas)
                 {
