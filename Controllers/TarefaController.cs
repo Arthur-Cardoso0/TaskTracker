@@ -5,12 +5,26 @@ using System.Security.Claims;
 using TaskTracker.Data;
 using TaskTracker.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.ComponentModel;
+using System.ComponentModel.Design;
 
 namespace TaskTracker.Controllers
 {
     [Authorize]
     public class TarefaController : Controller
     {
+        private async Task ValidarCategoriasAsync(int? categoriaId, int usuarioId)
+        {
+            if (!categoriaId.HasValue)
+            {
+                return;
+            }
+            var categoriaValida = await _context.Categorias.AnyAsync(c => c.Id == categoriaId.Value && c.UsuarioId == usuarioId);
+            if (!categoriaValida)
+            {
+                ModelState.AddModelError(nameof(Tarefa.CategoriaId), "selecione uma categoria valida");
+            }
+        }
         private readonly ILogger<TarefaController> _logger;
         private readonly AppDbContext _context;
 
@@ -20,7 +34,7 @@ namespace TaskTracker.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index(string buscar, StatusTarefa? statusfiltro, Prioridade? prioridadefiltro, string? ordenarPor)
+        public async Task<IActionResult> Index(string buscar, StatusTarefa? statusfiltro, Prioridade? prioridadefiltro, string ordenarPor)
         {
             var usuarioIdstring = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(usuarioIdstring))
@@ -106,6 +120,7 @@ namespace TaskTracker.Controllers
                 tarefa.BoardListId = lista.Id;
 
                 ViewBag.NomeLista = lista.Name;
+                ViewBag.BoardId = lista.BoardId;
             }
 
             return View(tarefa);
@@ -120,6 +135,7 @@ namespace TaskTracker.Controllers
             );
 
             tarefa.UsuarioId = usuarioId;
+            await ValidarCategoriasAsync(tarefa.CategoriaId, usuarioId);
 
             var lista = await _context.BoardLists
                 .Include(l => l.Board)
@@ -156,6 +172,7 @@ namespace TaskTracker.Controllers
                 if (lista != null)
                 {
                     ViewBag.NomeLista = lista.Name;
+                    ViewBag.BoardId = lista.BoardId;
                 }
 
                 return View(tarefa);
@@ -172,13 +189,13 @@ namespace TaskTracker.Controllers
 
             await _context.SaveChangesAsync();
 
-            return RedirectToAction("Detalhes", "Board",new { id = lista!.BoardId });
+            return RedirectToAction("Detalhes", "Board", new { id = lista!.BoardId });
         }
         [HttpGet]
         public async Task<IActionResult> Editar(int id)
         {
             var usuarioId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var tarefa = await _context.Tarefas.FirstOrDefaultAsync(t => t.Id == id && t.UsuarioId == usuarioId);
+            var tarefa = await _context.Tarefas.Include(t => t.BoardList).FirstOrDefaultAsync(t => t.Id == id && t.UsuarioId == usuarioId);
 
             if (tarefa == null)
             {
@@ -188,6 +205,8 @@ namespace TaskTracker.Controllers
             var categorias = await _context.Categorias.Where(c => c.UsuarioId == usuarioId).ToListAsync();
             ViewBag.Categorias = new SelectList(categorias, "Id", "Nome", tarefa.CategoriaId);
 
+            ViewBag.BoardId = tarefa.BoardList.BoardId;
+
             return View(tarefa);
         }
 
@@ -196,15 +215,19 @@ namespace TaskTracker.Controllers
         public async Task<IActionResult> Editar(int id, Tarefa tarefaAtualizada)
         {
             var usuarioId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var tarefa = await _context.Tarefas.FirstOrDefaultAsync(t => t.Id == id && t.UsuarioId == usuarioId);
+            var tarefa = await _context.Tarefas.Include(t => t.BoardList).FirstOrDefaultAsync(t => t.Id == id && t.UsuarioId == usuarioId);
 
             if (tarefa == null)
             {
                 return NotFound();
             }
+            ViewBag.BoardId = tarefa.BoardList.BoardId;
 
             ModelState.Remove(nameof(Tarefa.Usuario));
             ModelState.Remove(nameof(Tarefa.Categoria));
+
+            await ValidarCategoriasAsync(tarefaAtualizada.CategoriaId, usuarioId);
+
             if (!ModelState.IsValid)
             {
                 var categorias = await _context.Categorias.Where(c => c.UsuarioId == usuarioId).ToListAsync();
@@ -220,7 +243,7 @@ namespace TaskTracker.Controllers
             tarefa.Prazo = DateTime.SpecifyKind(tarefaAtualizada.Prazo, DateTimeKind.Utc);
 
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Detalhes", "Board", new { id = tarefa.BoardList.BoardId });
 
         }
 
@@ -228,13 +251,13 @@ namespace TaskTracker.Controllers
         public async Task<IActionResult> Detalhes(int id)
         {
             var usuarioId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var tarefa = await _context.Tarefas.Include(t => t.Categoria).FirstOrDefaultAsync(t => t.Id == id && t.UsuarioId == usuarioId);
+            var tarefa = await _context.Tarefas.Include(t => t.Categoria).Include(t => t.BoardList).FirstOrDefaultAsync(t => t.Id == id && t.UsuarioId == usuarioId);
 
             if (tarefa == null)
             {
                 return NotFound();
             }
-
+            ViewBag.BoardId = tarefa.BoardList.BoardId;
             return View(tarefa);
         }
 
@@ -243,13 +266,14 @@ namespace TaskTracker.Controllers
         public async Task<IActionResult> Excluir(int id)
         {
             var usuarioId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var tarefa = await _context.Tarefas.FirstOrDefaultAsync(t => t.Id == id && t.UsuarioId == usuarioId);
+            var tarefa = await _context.Tarefas.Include(t => t.BoardList).FirstOrDefaultAsync(t => t.Id == id && t.UsuarioId == usuarioId);
 
             if (tarefa == null)
             {
                 return NotFound();
             }
 
+            ViewBag.BoardId = tarefa.BoardList.BoardId;
             return View(tarefa);
         }
 
@@ -258,21 +282,24 @@ namespace TaskTracker.Controllers
         public async Task<IActionResult> ExcluirConfirmado(int id)
         {
             var usuarioId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var tarefa = await _context.Tarefas.FirstOrDefaultAsync(t => t.Id == id && t.UsuarioId == usuarioId);
+            var tarefa = await _context.Tarefas.Include(t => t.BoardList).FirstOrDefaultAsync(t => t.Id == id && t.UsuarioId == usuarioId);
 
             if (tarefa == null)
             {
                 return NotFound();
             }
+            var BoardId = tarefa.BoardList.BoardId;
+
             _context.Tarefas.Remove(tarefa);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Detalhes", "Board", new { id = BoardId });
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
 
         public IActionResult Error()
         {
+            Response.StatusCode = 500;
             return View("Error");
         }
     }

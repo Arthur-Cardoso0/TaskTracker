@@ -1,0 +1,25 @@
+@model TaskTracker.Models.Categoria
+
+@{
+    ViewData["Title"] = "Editar categoria";
+}
+
+<h1>Editar categoria</h1>
+
+<form asp-action="Editar" asp-route-id="@Model.Id" method="post">
+    <div asp-validation-summary="All"
+         class="text-danger mb-3"></div>
+
+    <div class="mb-3">
+        <label asp-for="Nome" class="form-label"></label>
+        <input asp-for="Nome" class="form-control" required />
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Salvar alterações
+    </button>
+
+    <a asp-action="Index" class="btn btn-secondary">
+        Cancelar
+    </a>
+</form>

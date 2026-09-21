@@ -38,19 +38,23 @@ namespace TaskTracker.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Criar(Categoria categoria)
+        public async Task<IActionResult> Criar([Bind("Nome")]Categoria categoria)
         {
-            categoria.UsuarioId = GetUsuarioId();
-            ModelState.Remove(nameof(categoria.Usuario));
-            ModelState.Remove(nameof(categoria.Tarefas));
-            ModelState.Remove(nameof(categoria.UsuarioId));
+            if (string.IsNullOrWhiteSpace(categoria.Nome))
+            {
+                ModelState.AddModelError(nameof(Categoria.Nome), "Informe o nome da categoria");
+            }
 
             if (!ModelState.IsValid)
             {
                 return View(categoria);
             }
-            _context.Categorias.Add(categoria);
+
+            var novaCategoria = new Categoria{Nome = categoria.Nome.Trim(), UsuarioId = GetUsuarioId()};
+
+            _context.Categorias.Add(novaCategoria);
             await _context.SaveChangesAsync();
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -86,22 +90,27 @@ namespace TaskTracker.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Editar(int id, Categoria dadosAtualizados)
+        public async Task<IActionResult> Editar(int id, [Bind("Nome")] Categoria dadosAtualizados)
         {
             var usuarioId = GetUsuarioId();
             var categoria = await _context.Categorias.FirstOrDefaultAsync(c => c.Id == id && c.UsuarioId == usuarioId);
-            if (categoria == null) return NotFound();
-
-            ModelState.Remove(nameof(categoria.Usuario));
-            ModelState.Remove(nameof(categoria.Tarefas));
-            ModelState.Remove(nameof(categoria.UsuarioId));
-
-            if (!ModelState.IsValid)
+            if (categoria == null)
             {
-               return View(dadosAtualizados);
+                return NotFound();
             }
 
-            categoria.Nome = dadosAtualizados.Nome;
+            dadosAtualizados.Id = categoria.Id;
+
+            if (string.IsNullOrWhiteSpace(dadosAtualizados.Nome))
+            {
+               ModelState.AddModelError(nameof(Categoria.Nome), "informe o nome da categoria");
+            }
+            if (!ModelState.IsValid)
+            {
+                return View(dadosAtualizados);
+            }
+
+            categoria.Nome = dadosAtualizados.Nome.Trim();
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }

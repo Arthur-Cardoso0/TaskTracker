@@ -28,6 +28,6 @@
 
     <form asp-action="Excluir" asp-route-id="@Model.Id" method="post">
         <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>
-        <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+        <a asp-controller="Board" asp-action="Detalhes" asp-route-id="@ViewBag.BoardId" class="btn btn-secondary">Cancelar</a>
     </form>
 </div>

@@ -1,0 +1,86 @@
+@model IEnumerable<TaskTracker.Models.Tarefa>
+
+@{
+    ViewData["Title"] = "Minhas tarefas";
+}
+
+<h1>Minhas tarefas</h1>
+
+<form asp-action="Index" method="get" class="row g-2 mb-4">
+    <div class="col-md-8">
+        <label for="buscar" class="form-label">
+            Buscar por título ou descrição
+        </label>
+        <input id="buscar"
+               name="buscar"
+               value="@ViewBag.FiltroBusca"
+               class="form-control" />
+    </div>
+
+    <div class="col-md-4 d-flex align-items-end gap-2">
+        <button type="submit" class="btn btn-primary">
+            Buscar
+        </button>
+
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            Limpar
+        </a>
+    </div>
+</form>
+
+<a asp-controller="Board"
+   asp-action="Index"
+   class="btn btn-outline-primary mb-3">
+    Ir aos quadros
+</a>
+
+@if (!Model.Any())
+{
+    <p>Nenhuma tarefa encontrada.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Título</th>
+                    <th>Categoria</th>
+                    <th>Prazo</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var tarefa in Model)
+                {
+                    <tr>
+                        <td>@tarefa.Titulo</td>
+                        <td>@(tarefa.Categoria?.Nome ?? "Sem categoria")</td>
+                        <td>@tarefa.Prazo.ToString("dd/MM/yyyy")</td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                <a asp-action="Detalhes"
+                                   asp-route-id="@tarefa.Id"
+                                   class="btn btn-sm btn-outline-primary">
+                                    Detalhes
+                                </a>
+
+                                <a asp-action="Editar"
+                                   asp-route-id="@tarefa.Id"
+                                   class="btn btn-sm btn-outline-secondary">
+                                    Editar
+                                </a>
+
+                                <a asp-action="Excluir"
+                                   asp-route-id="@tarefa.Id"
+                                   class="btn btn-sm btn-outline-danger">
+                                    Excluir
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
